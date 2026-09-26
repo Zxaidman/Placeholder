@@ -24,62 +24,61 @@ const point = z.object({
     .max(ROWS - 1),
 });
 const object = point.extend({ kind: z.enum(kinds) });
-export const projectSchema = z
-  .object({
-    format: z.literal("thornwake"),
-    schemaVersion: z.literal("1.0.0"),
-    name: z.string().trim().min(1).max(80),
-    rooms: z
-      .array(
-        z.object({
-          id: z.string().min(1).max(60),
-          name: z.string().min(1).max(60),
-          spawn: point,
-          deathRule: z.enum(["instant", "health"]),
-          abilities: z.object({
-            dash: z.boolean(),
-            doubleJump: z.boolean(),
-            wallJump: z.boolean(),
-            pogo: z.boolean(),
-          }),
-          objects: z.array(object).max(COLS * ROWS),
+export const projectDraftSchema = z.object({
+  format: z.literal("thornwake"),
+  schemaVersion: z.literal("1.0.0"),
+  name: z.string().trim().min(1).max(80),
+  rooms: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(60),
+        name: z.string().min(1).max(60),
+        spawn: point,
+        deathRule: z.enum(["instant", "health"]),
+        abilities: z.object({
+          dash: z.boolean(),
+          doubleJump: z.boolean(),
+          wallJump: z.boolean(),
+          pogo: z.boolean(),
         }),
-      )
-      .min(1)
-      .max(30),
-  })
-  .superRefine((p, c) => {
-    const ids = new Set<string>();
-    for (const r of p.rooms) {
-      if (ids.has(r.id))
-        c.addIssue({ code: "custom", message: "Room IDs must be unique" });
-      ids.add(r.id);
-      const cells = new Set<string>();
-      for (const o of r.objects) {
-        const key = `${o.x},${o.y}`;
-        if (cells.has(key))
-          c.addIssue({
-            code: "custom",
-            message: "Only one object per cell is supported",
-          });
-        cells.add(key);
-      }
-      if (
-        r.objects.some(
-          (o) => o.kind === "solid" && o.x === r.spawn.x && o.y === r.spawn.y,
-        )
-      )
+        objects: z.array(object).max(COLS * ROWS),
+      }),
+    )
+    .min(1)
+    .max(30),
+});
+export const projectSchema = projectDraftSchema.superRefine((p, c) => {
+  const ids = new Set<string>();
+  for (const r of p.rooms) {
+    if (ids.has(r.id))
+      c.addIssue({ code: "custom", message: "Room IDs must be unique" });
+    ids.add(r.id);
+    const cells = new Set<string>();
+    for (const o of r.objects) {
+      const key = `${o.x},${o.y}`;
+      if (cells.has(key))
         c.addIssue({
           code: "custom",
-          message: "Spawn cannot be inside a wall",
+          message: "Only one object per cell is supported",
         });
-      if (r.objects.filter((o) => o.kind === "exit").length !== 1)
-        c.addIssue({
-          code: "custom",
-          message: "Each room needs exactly one exit",
-        });
+      cells.add(key);
     }
-  });
+    if (
+      r.objects.some(
+        (o) => o.kind === "solid" && o.x === r.spawn.x && o.y === r.spawn.y,
+      )
+    )
+      c.addIssue({
+        code: "custom",
+        message: "Spawn cannot be inside a wall",
+      });
+    if (r.objects.filter((o) => o.kind === "exit").length !== 1)
+      c.addIssue({
+        code: "custom",
+        message: "Each room needs exactly one exit",
+      });
+  }
+});
 export type Project = z.infer<typeof projectSchema>;
 export type Room = Project["rooms"][number];
 export type TileObject = Room["objects"][number];

@@ -9,6 +9,7 @@ import {
   blankRoom,
   demoProject,
   parseProject,
+  projectDraftSchema,
   type Project,
   type Kind,
 } from "./model";
@@ -18,10 +19,10 @@ import "./style.css";
 const $ = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 const app = $("app");
-app.innerHTML = `<header><div class="brand"><span class="sigil">✦</span> THORNWAKE <small>0.1.0 / CREATOR</small></div><nav><button id="help">Guide</button><button id="settings">Controls</button><button id="fullscreen" title="Fullscreen">⛶</button><button id="install" hidden>Install</button></nav></header>
+app.innerHTML = `<header><div class="brand"><span class="sigil">✦</span> THORNWAKE <small>0.1.1 / CREATOR</small></div><nav><button id="help">Guide</button><button id="settings">Controls</button><button id="fullscreen" title="Fullscreen">⛶</button><button id="install" hidden>Install</button></nav></header>
 <section class="toolbar"><input id="projectName" aria-label="Project name" maxlength="80"><select id="rooms" aria-label="Room"></select><button id="addRoom">＋ Room</button><span class="divider"></span><button id="undo" title="Undo">↶</button><button id="redo" title="Redo">↷</button><button id="save">Save</button><button id="import">Import</button><button id="export">Export</button><button id="share">Link</button><button id="play" class="primary">▶ Playtest</button></section>
 <main><aside id="palette"><p class="eyebrow">BUILD YOUR TRIAL</p><h1>The room is yours.</h1><p class="subtle">Choose a piece. Paint a path.<br>Then see if you can survive it.</p><div id="tools"></div><div class="room-options"><label>Room name<input id="roomName" maxlength="60"></label><label>Death rule<select id="deathRule"><option value="instant">Instant · restart room</option><option value="health">Health · checkpoint / 3 HP</option></select></label><p class="eyebrow">AVAILABLE MOVEMENT</p><div id="abilities"></div></div><p class="asset-credit">Art by Kenney · CC0<br>Precision trials, made by you.</p></aside>
-<section id="workspace"><div class="stage-bar"><span id="mode">CREATOR / 40 × 22</span><span id="runStats">Grid snapped · drag to paint</span><select id="ratio" aria-label="Viewport aspect ratio"><option value="full">Full</option><option value="16/9">16:9</option><option value="4/3">4:3</option></select></div><div id="stage"><div id="game"></div><div id="touch"><div id="stick" class="control"><span></span></div><button id="left" class="control direction">◀</button><button id="right" class="control direction">▶</button><button id="down" class="control direction">▼</button><button id="attack" class="control">Attack</button><button id="dash" class="control">Dash</button><button id="jump" class="control">Jump</button></div><div id="pauseOverlay" hidden><h2>Paused</h2><button id="resume">Resume trial</button></div></div><footer><span id="hint">Place platforms, hazards, and an exit. Drag to paint.</span><button id="restart" hidden>Restart</button><button id="pause" hidden>Pause</button><span id="clearState">UNVERIFIED</span></footer></section></main><div id="toast" role="status"></div><input type="file" id="file" accept=".json,application/json" hidden>
+<section id="workspace"><div class="stage-bar"><span id="mode">CREATOR / 40 × 22</span><span id="runStats">Grid snapped · drag to paint</span><select id="ratio" aria-label="Viewport aspect ratio"><option value="full">Full</option><option value="16/9">16:9</option><option value="4/3">4:3</option></select></div><div id="stage"><div id="game"></div><div id="touch"><div id="stick" class="control"><span></span></div><button id="left" class="control direction">◀</button><button id="right" class="control direction">▶</button><button id="down" class="control direction">▼</button><button id="attack" class="control">Attack</button><button id="dash" class="control">Dash</button><button id="jump" class="control">Jump</button></div><div id="pauseOverlay" hidden><h2>Paused</h2><button id="resume">Resume trial</button></div></div><footer><span id="hint">Place platforms, hazards, and an exit. Drag to paint.</span><button id="restart" hidden>Restart</button><button id="pause" hidden>Pause</button><span id="clearState">UNVERIFIED</span></footer></section></main><div id="updateBanner" hidden role="status"><span>A new version is ready.</span><button id="reviewUpdate">Update available</button></div><div id="toast" role="status"></div><input type="file" id="file" accept=".json,application/json" hidden>
 <dialog id="dialog"><button id="closeDialog" class="close">Close ✕</button><div id="dialogBody"></div></dialog><div class="rotate"><span>⛶</span><h2>Turn your device sideways</h2><p>Thornwake is designed for landscape play.</p></div>`;
 let project = demoProject(),
   roomIndex = 0,
@@ -632,7 +633,7 @@ $("closeDialog").onclick = () => {
 };
 $("help").onclick = () =>
   showDialog(
-    `<p class="eyebrow">THORNWAKE / FIELD NOTES</p><h2>Make the impossible feel possible.</h2><p>Paint a room, place a safe spawn and one exit, then playtest. An exit advances to the next room in your project.</p><p><b>Keyboard:</b> A/D or arrows to move; Space to jump; Shift to dash; Down + J/X to pogo. Hold jump for a higher leap. Jump against walls to climb.</p><p><b>Touch:</b> fixed joystick to move; pull it downward and tap Attack to pogo. Change to buttons or reposition controls in Controls.</p><p>Orange rings and pink thorns can be pogoed with a timed downward attack. Touching them without a successful pogo is lethal. Cyan crystals restore air abilities.</p><p>Gold flags save your position in health mode. Instant mode restarts the room. Three lost hearts restart the room in health mode.</p><p><b>0.1.0 boundaries:</b> static tile rooms, sequential exits, four ability toggles. No endless generator, rope, long dash, moving platforms, visual triggers, or online gallery yet. A local clear is not anti-cheat verification.</p><p>Free artwork: <a href="https://kenney.nl/assets/1-bit-platformer-pack" target="_blank" rel="noopener">Kenney 1-Bit Platformer Pack</a>, CC0. Built with Phaser.</p>`,
+    `<p class="eyebrow">THORNWAKE / FIELD NOTES</p><h2>Make the impossible feel possible.</h2><p>Paint a room, place a safe spawn and one exit, then playtest. An exit advances to the next room in your project.</p><p><b>Keyboard:</b> A/D or arrows to move; Space to jump; Shift to dash; Down + J/X to pogo. Hold jump for a higher leap. Jump against walls to climb.</p><p><b>Touch:</b> fixed joystick to move; pull it downward and tap Attack to pogo. Change to buttons or reposition controls in Controls.</p><p>Orange rings and pink thorns can be pogoed with a timed downward attack. Touching them without a successful pogo is lethal. Cyan crystals restore air abilities.</p><p>Gold flags save your position in health mode. Instant mode restarts the room. Three lost hearts restart the room in health mode.</p><p><b>0.1.1 boundaries:</b> static tile rooms, sequential exits, four ability toggles. No endless generator, rope, long dash, moving platforms, visual triggers, or online gallery yet. A local clear is not anti-cheat verification.</p><p>Free artwork: <a href="https://kenney.nl/assets/1-bit-platformer-pack" target="_blank" rel="noopener">Kenney 1-Bit Platformer Pack</a>, CC0. Built with Phaser.</p>`,
   );
 function updateTouch() {
   document.body.dataset.controls = controlMode;
@@ -838,13 +839,45 @@ $("install").onclick = guard(async () => {
 });
 const updateSW = registerSW({
   onNeedRefresh() {
-    toast("An update is ready. Save and reload when your trial is finished.");
+    $("updateBanner").hidden = false;
+  },
+  onRegisteredSW(_url, registration) {
+    if (!registration) return;
+    const check = () => {
+      if (navigator.onLine && !document.hidden)
+        void registration.update().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", check);
+    window.setInterval(check, 60 * 60 * 1000);
   },
   onOfflineReady() {
     toast("Ready for offline play on this device.");
   },
 });
-void updateSW;
+$("reviewUpdate").onclick = () => {
+  showDialog(
+    `<h2>Update Thornwake?</h2><p>Your current editor draft and control layout will be preserved. This playtest will end and the updated game will reopen in Creator.</p><button id="applyUpdate" class="primary">Preserve draft &amp; update</button>`,
+  );
+  $("applyUpdate").onclick = guard(async () => {
+    const button = $<HTMLButtonElement>("applyUpdate");
+    button.disabled = true;
+    try {
+      // Keep unfinished rooms, including a temporarily missing exit, across reload.
+      const draft = projectDraftSchema.parse(project);
+      sessionStorage.setItem(
+        "thornwake-update-draft",
+        JSON.stringify({ project: draft, roomIndex, hash: location.hash }),
+      );
+      await save("controls", preset());
+      dirty = false;
+      await updateSW(true);
+    } catch (error) {
+      dirty = true;
+      button.disabled = false;
+      throw error;
+    }
+  });
+};
 window.addEventListener("beforeunload", (e) => {
   if (dirty) {
     e.preventDefault();
@@ -854,7 +887,19 @@ window.addEventListener("beforeunload", (e) => {
 void (async () => {
   try {
     const hash = location.hash;
-    if (hash.startsWith("#level=")) {
+    const draftText = sessionStorage.getItem("thornwake-update-draft");
+    const draft = draftText ? JSON.parse(draftText) : null;
+    if (draft && draft.hash === hash) {
+      project = projectDraftSchema.parse(draft.project);
+      roomIndex = Number.isInteger(draft.roomIndex)
+        ? Math.max(0, Math.min(draft.roomIndex, project.rooms.length - 1))
+        : 0;
+      sessionStorage.removeItem("thornwake-update-draft");
+      dirty = true;
+      toast(
+        "Update complete. Your editor draft was restored; Save to keep it on this device.",
+      );
+    } else if (hash.startsWith("#level=")) {
       if (hash.length > 8000) throw Error("Shared level link too large");
       const raw = LZString.decompressFromEncodedURIComponent(hash.slice(7));
       if (!raw) throw Error("Invalid level link");

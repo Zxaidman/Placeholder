@@ -557,3 +557,21 @@ dialog a {
 .playing #play {
   padding: 5px 12px;
 }
+
+#updateBanner {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 12px;
+  background: #d8dfca;
+  color: #182c2b;
+  border-radius: 6px;
+  box-shadow: 0 5px 20px #0006;
+  font-size: 13px;
+  max-width: 95vw;
+}

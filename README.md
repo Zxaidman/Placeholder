@@ -1,6 +1,6 @@
 # Thornwake
 
-**Version 0.1.0 · Creator-first precision platformer · Browser + Android touch**
+**Version 0.1.1 · Creator-first precision platformer · Browser + Android touch**
 
 Build a trial, play it immediately, and share it as an open JSON project or a compact link. Thornwake takes inspiration from precision platforming and pogo movement while building its own standalone identity.
 
@@ -79,6 +79,8 @@ Browser storage is not a permanent backup. Export valuable projects and layouts.
 
 The production build precaches the app and bundled assets. After the first successful online load and cache completion, it can reload offline. Use Install when the browser exposes it, or the browser menu's Install/Add to home screen option. Fullscreen and landscape are requested, not guaranteed across all browsers. Portrait phones receive a rotate prompt. Desktop keyboard and Android touch are the main targets. A browser with JavaScript, Canvas/WebGL and IndexedDB is required.
 
+When a new version is cached, **Update available** appears. It pauses the trial for review; **Preserve draft & update** keeps the current editor draft (even unfinished rooms), selected room, and control layout before reloading. The playtest restarts in Creator. Save the restored draft to keep it permanently on this device. Updates are checked when returning to the app and hourly while visible and online.
+
 ## Deploy on Vercel
 
 Import **Zxaidman/Placeholder** into Vercel with these settings:
@@ -88,7 +90,7 @@ Import **Zxaidman/Placeholder** into Vercel with these settings:
 | Framework preset | Vite |
 | Root directory | Repository root |
 | Install command | `npm ci` |
-| Build command | `npm run build` |
+| Build command | `npm test && npm run build` |
 | Output directory | `dist` |
 | Node.js | 24.x |
 | Environment variables | None required |
@@ -107,6 +109,8 @@ npx playwright install chromium
 node tests/browser.mjs
 # Start npm run preview in another terminal after building
 node tests/offline.mjs
+# After building; starts its own temporary server
+node tests/pwa-update.mjs
 ```
 
 `CHROMIUM_PATH` optionally supplies an existing browser executable; `TEST_URL` overrides the default URL. Screenshots are written to the operating system temporary directory. Browser checks exercise persistence, room undo, JSON export/import, play/pause, settings, landscape layout and aspect ratio. Real device feel, accessibility with assistive tools and 2 GB Android performance remain unverified.
