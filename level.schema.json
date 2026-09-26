@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "thornwake"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "rooms": {
+      "minItems": 1,
+      "maxItems": 30,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "spawn": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 39
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 21
+              }
+            },
+            "required": [
+              "x",
+              "y"
+            ],
+            "additionalProperties": false
+          },
+          "deathRule": {
+            "type": "string",
+            "enum": [
+              "instant",
+              "health"
+            ]
+          },
+          "abilities": {
+            "type": "object",
+            "properties": {
+              "dash": {
+                "type": "boolean"
+              },
+              "doubleJump": {
+                "type": "boolean"
+              },
+              "wallJump": {
+                "type": "boolean"
+              },
+              "pogo": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "dash",
+              "doubleJump",
+              "wallJump",
+              "pogo"
+            ],
+            "additionalProperties": false
+          },
+          "objects": {
+            "maxItems": 880,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 39
+                },
+                "y": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 21
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "solid",
+                    "spike",
+                    "pogo",
+                    "crystal",
+                    "checkpoint",
+                    "exit"
+                  ]
+                }
+              },
+              "required": [
+                "x",
+                "y",
+                "kind"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "spawn",
+          "deathRule",
+          "abilities",
+          "objects"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "format",
+    "schemaVersion",
+    "name",
+    "rooms"
+  ],
+  "additionalProperties": false
+}

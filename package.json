@@ -1,0 +1,33 @@
+{
+  "name": "thornwake",
+  "version": "0.1.0",
+  "description": "Thornwake creator-first precision platformer",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "vitest run",
+    "check": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "dependencies": {
+    "idb": "^8.0.3",
+    "lz-string": "^1.5.0",
+    "phaser": "^3.90.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "prettier": "^3.9.9",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^5.0.2"
+  },
+  "private": true
+}
