@@ -1,12 +1,13 @@
-# Thornwake · v1.1.1
+# Thornwake · v1.2.0
 
 [Play Thornwake](https://thornwake.vercel.app/) — an installable, mobile-first precision platformer and room creator. Original game inspired by demanding platforming; it does not use Hollow Knight or Silksong assets, characters, or levels.
 
 ## Play
 
-- **Creator:** 80 × 44-cell rooms (twice the old width and height), half-cell placement, pan/zoom, selection, group copy/paste, undo/redo, room ordering and linked exits. Edit dimensions, movement paths, timing, channels, hook behavior, themes, death rules and allowed abilities. Campaign rooms can be copied and edited.
+- **Creator:** 80 × 44-cell rooms, half-cell placement, pan/zoom, selection, group copy/paste, undo/redo, room ordering and linked exits. Five region palettes are available in authored and creator rooms: Silent palace, Hanging garden, Ember halls, Mycelium wilds and Drowned ruins. The palette includes separate **walkable platform** and **under-platform** cells so the visible top surface and support fill can be edited independently. Campaign rooms can be copied and edited.
 - **Campaign:** 12 authored challenge rooms with progressive movement unlocks, saved progress, and an all-chapters practice option. Environmental chapter text introduces each mechanic.
 - **Endless:** seeded generated geometry, practice or three-health survival. Difficulty rises through room 100 and then plateaus. No automatic scrolling or movement. Revisit the most recent three rooms through their left portals.
+- **Tutorial:** a fully playable Wayfinder tutorial teaches movement one action at a time. The prompt above the traveller adapts to detected keyboard, touch/Android or connected gamepad input and highlights the matching touch control when relevant.
 - **Movement:** variable jump, wall slide/jump, double jump, dash, manually triggered pogo, charged long dash, clawline pulls and held rope swings. Crystals restore air movement; moving/timed platforms, launch pads, gravity fields, switches, doors, checkpoints and moving pogo enemies support creator challenges.
 - **Touch:** fixed joystick by default or directional buttons; drag, resize, adjust opacity and assign custom PNG textures. Export/import control presets. Keyboard is also supported.
 - **Display:** Full, 16:9 or 4:3 changes only the video viewport. Touch controls use the full play-surface width. Adjustable gameplay camera zoom and fullscreen button.
@@ -25,6 +26,7 @@
 | Clawline | Tap E near cyan anchor | Hook |
 | Rope swing | Hold E near cream anchor; release | Hold/release Hook |
 | Pause | Escape | Pause |
+| Gamepad | Left stick · A/✕ jump · B/○ dash · X/□ attack · LB/L1 hook | — |
 
 Hold Down while standing still to look below a ledge (along gravity in inverted rooms). The faint airborne marker shows the current solid surface directly below, not a predicted landing. Timed platforms show their remaining phase above the platform; touch controls indicate locked abilities and spent air dash.
 
@@ -61,13 +63,13 @@ Vercel is connected to `Zxaidman/Placeholder`, production branch `main`. Pushes 
 
 ## Project format
 
-App version **1.1.1**, project schema **1.1.0**, physics replay version **1.0.0**. These versions serve different purposes. Earlier 1.0.0 project exports are migrated on import. See [level.schema.json](level.schema.json) and [example](examples/silent-palace.json). Positions and sizes are cells; one cell is 32 simulation units. Exit destinations accept room IDs, `next`, `previous`, or `finish`. Switches control doors with matching channels. Export validation checks links, bounds and spawns; it does not prove arbitrary user rooms beatable.
+App version **1.2.0**, project schema **1.2.0**, physics replay version **1.0.0**. Projects from schema 1.0.0 and 1.1.0 are migrated on import. These versions serve different purposes. Earlier 1.0.0 project exports are migrated on import. See [level.schema.json](level.schema.json) and [example](examples/silent-palace.json). Positions and sizes are cells; one cell is 32 simulation units. Exit destinations accept room IDs, `next`, `previous`, or `finish`. Switches control doors with matching channels. Export validation checks links, bounds and spawns; it does not prove arbitrary user rooms beatable.
 
 ## Honest limits
 
 Generated rooms are accepted only after a fixed-step simulation completes a zero-death route. That proves one route in this physics model, not human difficulty or universal performance. Geometry uses a supported jump/dash/timed-platform subset with optional pogo/hook supports; it does not generate every mechanic combination. Generation has a bounded attempt/time budget and reports failure rather than hanging. The practical room-index limit is 1,000,000, not mathematical infinity.
 
-The campaign has 12 rooms, not 100 handcrafted rooms or a large narrative world. Human difficulty labels and balance need playtesting. Two-GB 2020 Android hardware is a target, not a measured guarantee; physical-device performance testing remains outstanding. Art combines an original vector traveller and palace scenery with a bundled free atlas; character animation is simple. There is no hosted level gallery or multiplayer. Clear replays are evidence, not anti-cheat, and stop recording after 20 minutes per attempt. See [verification](docs/VERIFICATION.md) and [limits](LIMITS_AND_ROADMAP.md).
+The campaign has 12 rooms, not 100 handcrafted rooms or a large narrative world. Human difficulty labels and balance need playtesting. Two-GB 2020 Android hardware is a target, not a measured guarantee; physical-device performance testing remains outstanding. Art uses original procedural vector region scenery plus the bundled free Kenney atlas. The traveller now uses a smoothed procedural pose system with expressive lean, squash/stretch, stride, bob, dash trails and a larger readable head. There is no hosted level gallery or multiplayer. Clear replays are evidence, not anti-cheat, and stop recording after 20 minutes per attempt. See [verification](docs/VERIFICATION.md) and [limits](LIMITS_AND_ROADMAP.md).
 
 ## Assets and license
 
