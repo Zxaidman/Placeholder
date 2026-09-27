@@ -41,6 +41,7 @@ export class Controls {
   enabled = false;
   keys = new Set<string>();
   touch = new Map<string, Input>();
+  private resetPointers: Array<() => void> = [];
   onLayout = () => {};
   onPause = () => {};
   constructor(public element: HTMLElement) {
@@ -135,6 +136,8 @@ export class Controls {
       };
       el.onpointerdown = (e) => {
         e.preventDefault();
+        if (pointer !== null) return;
+        el.classList.add("pressed");
         pointer = e.pointerId;
         el.setPointerCapture(pointer);
         move(e);
@@ -142,13 +145,20 @@ export class Controls {
       el.onpointermove = (e) => {
         if (pointer === e.pointerId) move(e);
       };
-      const up = () => {
+      const up = (e: PointerEvent) => {
+        if (pointer !== e.pointerId) return;
+        el.classList.remove("pressed");
         pointer = null;
         this.touch.delete(el.id);
         if (el.id === "stick")
           el.querySelector<HTMLElement>("span")!.style.transform = "";
         if (this.editing) this.onLayout();
       };
+      this.resetPointers.push(() => {
+        if (pointer !== null && el.hasPointerCapture(pointer))
+          el.releasePointerCapture(pointer);
+        pointer = null;
+      });
       el.onpointerup = up;
       el.onpointercancel = up;
       el.onlostpointercapture = up;
@@ -167,6 +177,27 @@ export class Controls {
       el.style.transform = `scale(${this.preset.scale})`;
       el.style.backgroundImage = p.texture ? `url("${p.texture}")` : "";
     }
+  }
+  availability(
+    abilities: {
+      dash: boolean;
+      longDash: boolean;
+      pogo: boolean;
+      grapple: boolean;
+      swing: boolean;
+    },
+    dashReady: boolean,
+  ) {
+    for (const [id, locked] of [
+      ["dash", !abilities.dash && !abilities.longDash],
+      ["attack", !abilities.pogo],
+      ["hook", !abilities.grapple && !abilities.swing],
+    ] as const) {
+      const el = this.element.querySelector<HTMLElement>("#" + id)!;
+      el.classList.toggle("ability-locked", locked);
+      el.setAttribute("aria-disabled", String(locked));
+    }
+    this.element.querySelector("#dash")!.classList.toggle("spent", !dashReady);
   }
   read(): Input {
     const k = this.keys,
@@ -191,7 +222,13 @@ export class Controls {
     return i;
   }
   release() {
+    for (const reset of this.resetPointers) reset();
     this.keys.clear();
     this.touch.clear();
+    for (const el of this.element.querySelectorAll<HTMLElement>(".control")) {
+      el.classList.remove("pressed");
+    }
+    const knob = this.element.querySelector<HTMLElement>("#stick span");
+    if (knob) knob.style.transform = "";
   }
 }

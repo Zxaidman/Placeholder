@@ -3,8 +3,10 @@ export class PlatformCamera {
   x = 0;
   y = 0;
   ready = false;
+  peekTime = 0;
   reset() {
     this.ready = false;
+    this.peekTime = 0;
   }
   update(
     p: {
@@ -18,6 +20,7 @@ export class PlatformCamera {
     width: number,
     height: number,
     dt: number,
+    lookDown = false,
   ) {
     const px = p.x + 10,
       py = p.y + 14;
@@ -35,13 +38,17 @@ export class PlatformCamera {
     this.x += (px + look - this.x) * ease;
     // Keep the takeoff platform in view throughout ordinary jumps.
     let target = this.y;
-    if (p.grounded) target = py + height * 0.08 * p.gravity;
+    this.peekTime =
+      lookDown && p.grounded && Math.abs(p.vx) < 40
+        ? Math.min(0.8, this.peekTime + Math.min(dt, 0.05))
+        : 0;
+    if (p.grounded)
+      target = py + height * (this.peekTime > 0.25 ? 0.28 : 0.08) * p.gravity;
     else {
-      const top = this.y - height * 0.25,
-        bottom = this.y + height * 0.14;
-      if (py < top) target = py + height * 0.25;
-      if (py > bottom) target = py - height * 0.14;
-      // Anticipate a long fall, without chasing every small jump.
+      // Measure along gravity so inverted jumps receive identical framing.
+      const offset = (py - this.y) * p.gravity;
+      if (offset < -height * 0.25) target = py + height * 0.25 * p.gravity;
+      if (offset > height * 0.14) target = py - height * 0.14 * p.gravity;
       if (p.vy * p.gravity > 420) target = py + height * 0.12 * p.gravity;
     }
     this.y += (target - this.y) * (1 - Math.exp(-Math.min(dt, 0.05) * 3.5));

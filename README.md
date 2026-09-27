@@ -1,4 +1,4 @@
-# Thornwake · v1.1.0
+# Thornwake · v1.1.1
 
 [Play Thornwake](https://thornwake.vercel.app/) — an installable, mobile-first precision platformer and room creator. Original game inspired by demanding platforming; it does not use Hollow Knight or Silksong assets, characters, or levels.
 
@@ -25,6 +25,8 @@
 | Clawline | Tap E near cyan anchor | Hook |
 | Rope swing | Hold E near cream anchor; release | Hold/release Hook |
 | Pause | Escape | Pause |
+
+Hold Down while standing still to look below a ledge (along gravity in inverted rooms). The faint airborne marker shows the current solid surface directly below, not a predicted landing. Timed platforms show their remaining phase above the platform; touch controls indicate locked abilities and spent air dash.
 
 Use landscape on phones. Install from the in-game Install button when available, or the browser's **Install app / Add to Home screen** menu. Installation and fullscreen behavior depend on the browser. After the first successful online load, the game is available offline.
 
@@ -59,7 +61,7 @@ Vercel is connected to `Zxaidman/Placeholder`, production branch `main`. Pushes 
 
 ## Project format
 
-App version **1.1.0**, project schema **1.1.0**, physics replay version **1.0.0**. These versions serve different purposes. Earlier 1.0.0 project exports are migrated on import. See [level.schema.json](level.schema.json) and [example](examples/silent-palace.json). Positions and sizes are cells; one cell is 32 simulation units. Exit destinations accept room IDs, `next`, `previous`, or `finish`. Switches control doors with matching channels. Export validation checks links, bounds and spawns; it does not prove arbitrary user rooms beatable.
+App version **1.1.1**, project schema **1.1.0**, physics replay version **1.0.0**. These versions serve different purposes. Earlier 1.0.0 project exports are migrated on import. See [level.schema.json](level.schema.json) and [example](examples/silent-palace.json). Positions and sizes are cells; one cell is 32 simulation units. Exit destinations accept room IDs, `next`, `previous`, or `finish`. Switches control doors with matching channels. Export validation checks links, bounds and spawns; it does not prove arbitrary user rooms beatable.
 
 ## Honest limits
 

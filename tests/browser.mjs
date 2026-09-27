@@ -85,6 +85,20 @@ try {
     document.getElementById("toast").textContent.startsWith("Imported"),
   );
   await p.locator("#play").click();
+  const jumpBox = await p.locator("#jump").boundingBox();
+  await p.mouse.move(
+    jumpBox.x + jumpBox.width / 2,
+    jumpBox.y + jumpBox.height / 2,
+  );
+  await p.mouse.down();
+  assert.ok(
+    (await p.locator("#jump").getAttribute("class")).includes("pressed"),
+  );
+  await p.mouse.up();
+  assert.ok(
+    !(await p.locator("#jump").getAttribute("class")).includes("pressed"),
+  );
+  assert.equal(await p.locator("#dash").getAttribute("aria-disabled"), "true");
   await p.keyboard.down("KeyD");
   await p.waitForTimeout(300);
   await p.keyboard.up("KeyD");

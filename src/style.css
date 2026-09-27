@@ -924,3 +924,36 @@ dialog:has(#chooseCampaign) h2 {
     transition: none;
   }
 }
+
+/* Touch state remains visible with custom button textures and sizes. */
+.control.pressed {
+  border-color: #fff0ba;
+  box-shadow:
+    inset 0 0 0 4px #edddae44,
+    0 0 18px #dfd9ad33;
+  filter: brightness(1.35);
+}
+.control.ability-locked {
+  filter: grayscale(1);
+  border-style: dashed;
+  color: #78908b;
+}
+.control.ability-locked::after {
+  content: "×";
+  position: absolute;
+  right: 5px;
+  top: 3px;
+  font-size: 13px;
+  color: #c8c8b8;
+}
+#dash.spent:not(.ability-locked) {
+  border-style: dotted;
+  color: #9db3ac;
+}
+#dash.spent:not(.ability-locked)::after {
+  content: "↻";
+  position: absolute;
+  right: 6px;
+  top: 3px;
+  font-size: 12px;
+}

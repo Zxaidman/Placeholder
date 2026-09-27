@@ -271,6 +271,7 @@ export class TrialScene extends Phaser.Scene {
         this.scale.width / zoom,
         this.scale.height / zoom,
         delta / 1000,
+        this.world.previous.down && !this.world.previous.dash,
       );
       camera.centerOn(center.x, center.y);
     } else {
@@ -299,6 +300,19 @@ export class TrialScene extends Phaser.Scene {
           g.fillRect(x, y, r.w, r.h);
           g.lineStyle(2, 0xdcdfca, a ? 1 : 0.25);
           g.strokeRect(x, y, r.w, r.h);
+          if (o.kind === "timed") {
+            const phase = ((w.time + o.phase) % o.period) / o.period;
+            g.fillStyle(a ? 0xeedda6 : 0x9ab8b3, a ? 0.95 : 0.35);
+            g.fillRect(
+              x,
+              y - 5,
+              r.w *
+                (a
+                  ? Math.max(0, (0.65 - phase) / 0.65)
+                  : Math.max(0, (1 - phase) / 0.35)),
+              2,
+            );
+          }
           break;
         }
         case "spike": {
@@ -316,6 +330,10 @@ export class TrialScene extends Phaser.Scene {
         }
         case "pogo":
         case "enemy":
+          g.fillStyle(o.kind === "enemy" ? 0x8b414e : 0x82543b, 0.8);
+          g.fillCircle(x + r.w / 2, y + r.h / 2, Math.min(r.w, r.h) / 2 - 4);
+          g.fillStyle(0xffd3a2, 0.9);
+          g.fillCircle(x + r.w / 2, y + r.h / 2, 3);
           g.lineStyle(3, o.kind === "enemy" ? 0xf37072 : 0xedb07f);
           g.strokeCircle(x + r.w / 2, y + r.h / 2, Math.min(r.w, r.h) / 2 - 3);
           g.lineBetween(x + 4, y + r.h / 2, x + r.w - 4, y + r.h / 2);
@@ -408,6 +426,34 @@ export class TrialScene extends Phaser.Scene {
           y: this.room.spawn.y * 32,
         };
     this.playerSprite.setVisible(false);
+    // Surface reference, not a trajectory prediction. Works with inverted gravity.
+    if (this.playing && !p.grounded) {
+      const candidates = w.solids
+        .filter((o) => active(o, w.time, w.channels))
+        .map((o) => rect(o, w.time))
+        .filter((r) => p.x + 10 >= r.x && p.x + 10 <= r.x + r.w)
+        .map((r) => ({ r, y: p.gravity > 0 ? r.y : r.y + r.h }))
+        .filter((v) => (v.y - (p.y + 14)) * p.gravity > 14)
+        .sort((a, b) => (a.y - b.y) * p.gravity);
+      const surface = candidates[0];
+      if (surface && Math.abs(surface.y - p.y) < 600) {
+        g.fillStyle(0xf2deb4, 0.24);
+        g.fillEllipse(p.x + 10, surface.y - p.gravity * 2, 22, 4);
+        g.lineStyle(1, 0xf2deb4, 0.65);
+        g.lineBetween(
+          p.x + 4,
+          surface.y - p.gravity * 6,
+          p.x + 10,
+          surface.y - p.gravity * 2,
+        );
+        g.lineBetween(
+          p.x + 16,
+          surface.y - p.gravity * 6,
+          p.x + 10,
+          surface.y - p.gravity * 2,
+        );
+      }
+    }
     const px = p.x + 10,
       py = p.y + 14,
       flip = p.gravity;

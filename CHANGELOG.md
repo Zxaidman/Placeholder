@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1
+
+- Added stationary Down-to-look ledge inspection and symmetric camera framing under reversed gravity.
+- Added an airborne surface marker, timed-platform cycle bars and clearer pogo targets.
+- Added touch pressed states, locked-ability/dash-refill indicators and safer pointer release after interruptions.
+- Kept simulation and replay physics unchanged.
+
 ## 1.1.0
 
 - Reworked presentation as a moonlit, overgrown palace: distant ruins, moss-edged masonry, soft lighting, motes, and an original botanical traveller.
