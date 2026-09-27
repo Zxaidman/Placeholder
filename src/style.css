@@ -15,7 +15,8 @@ body {
 }
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 button {
@@ -24,11 +25,12 @@ button {
   color: #cbdad5;
   background: #1a2a32;
   border-radius: 6px;
-  padding: 9px 12px;
+  padding: 8px 11px;
   white-space: nowrap;
 }
-button:hover {
-  background: #2c4249;
+button:hover,
+button.active {
+  background: #30463f;
   border-color: #8bafa0;
 }
 button:focus-visible,
@@ -42,7 +44,8 @@ button:disabled {
   cursor: default;
 }
 input,
-select {
+select,
+textarea {
   min-width: 0;
   background: #12232c;
   color: #dbe7e3;
@@ -50,58 +53,56 @@ select {
   border-radius: 5px;
   padding: 8px;
 }
+input[type="checkbox"] {
+  accent-color: #bacfa3;
+}
 header {
-  height: 64px;
+  height: 58px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 20px;
   border-bottom: 1px solid #293b42;
 }
 .brand {
   font-family: Georgia, serif;
   font-weight: bold;
   letter-spacing: 3px;
-  font-size: 21px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.sigil {
-  color: #dbc38d;
-  font-size: 30px;
+  font-size: 20px;
+  color: #e0d6b8;
+  white-space: nowrap;
 }
 .brand small {
   font-family: system-ui;
-  font-size: 10px;
-  letter-spacing: 2px;
+  font-size: 11px;
+  letter-spacing: 1px;
   color: #839a9e;
-  margin-left: 20px;
+  margin-left: 15px;
 }
 nav {
   display: flex;
-  gap: 8px;
+  gap: 5px;
 }
 nav button {
   background: transparent;
   border-color: transparent;
 }
 .toolbar {
-  height: 58px;
+  height: 52px;
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 20px;
+  gap: 6px;
+  padding: 6px 15px;
   border-bottom: 1px solid #293b42;
   overflow-x: auto;
 }
 .toolbar input {
-  width: 175px;
+  width: 160px;
 }
 .toolbar select {
-  max-width: 220px;
+  max-width: 210px;
 }
-.divider {
+.spacer {
   flex: 1;
 }
 .primary {
@@ -116,12 +117,12 @@ nav button {
 }
 main {
   display: flex;
-  height: calc(100dvh - 122px);
+  height: calc(100dvh - 110px);
 }
 aside {
-  width: 230px;
+  width: 225px;
   flex-shrink: 0;
-  padding: 24px 20px 12px;
+  padding: 18px 16px 12px;
   overflow: auto;
   border-right: 1px solid #293b42;
   background: #111f27;
@@ -139,26 +140,23 @@ h1 {
   letter-spacing: 2px;
   font-weight: bold;
 }
-.subtle {
-  color: #8ba0a3;
-  font-size: 12px;
-  line-height: 1.6;
-}
 #tools {
   display: grid;
-  gap: 6px;
-  margin: 23px 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 18px 0;
 }
 #tools button {
   text-align: left;
   background: transparent;
   border-color: transparent;
-  padding: 9px;
-  font-size: 12px;
+  padding: 6px 3px;
+  font-size: 11px;
+  white-space: normal;
 }
 #tools button span {
   display: inline-block;
-  width: 30px;
+  width: 22px;
   font-size: 18px;
   color: #d4c493;
 }
@@ -167,27 +165,39 @@ h1 {
   border-color: #627f64;
   color: #e5eddb;
 }
-.room-options {
-  border-top: 1px solid #2b3e45;
-  padding-top: 16px;
+.smallrow {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0;
+  flex-wrap: wrap;
 }
-.room-options label,
-dialog label {
+.smallrow button {
+  padding: 6px;
+  font-size: 11px;
+}
+.room-options,
+#properties {
+  border-top: 1px solid #2b3e45;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 5px;
+  margin-bottom: 10px;
   font-size: 12px;
-  color: #9fb3b3;
+  color: #a6babb;
+}
+label:has(input[type="checkbox"]) {
+  flex-direction: row;
+  align-items: center;
 }
 #abilities {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 #abilities label {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
   font-size: 11px;
 }
 .asset-credit {
@@ -201,44 +211,56 @@ dialog label {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 0 22px;
-  background: radial-gradient(ellipse at center, #1c2c32, #101b22);
+  background: #0c171e;
 }
 .stage-bar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  height: 55px;
-  font-size: 10px;
-  letter-spacing: 1px;
+  gap: 10px;
+  min-height: 43px;
+  padding: 0 12px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
   color: #9fb1b0;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 .stage-bar select {
-  margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
   padding: 4px;
 }
-.stage-bar #runStats {
-  color: #657f85;
+.stage-bar button {
+  padding: 5px 8px;
+  font-size: 12px;
+}
+#runStats {
+  color: #8da4a6;
   letter-spacing: 0;
 }
-#stage {
+.inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0;
+  gap: 8px;
+}
+#surface {
   position: relative;
   flex: 1;
   min-height: 0;
   width: 100%;
-  align-self: center;
-  border: 1px solid #38505a;
-  box-shadow: 0 18px 60px #030a1166;
-  background: #101c24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #080f15;
   overflow: hidden;
 }
-#stage.fixed-ratio {
-  flex: initial;
-  height: auto;
-  max-height: calc(100% - 105px);
-  max-width: 100%;
-  margin: auto 0;
+#video {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #101c24;
 }
 #game {
   width: 100%;
@@ -250,146 +272,150 @@ dialog label {
   display: block;
 }
 footer {
-  height: 50px;
+  height: 32px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 11px;
+  gap: 10px;
+  font-size: 10px;
   color: #88a1a4;
+}
+#hint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 #clearState {
   margin-left: auto;
+  white-space: nowrap;
   font-size: 9px;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   color: #c9bc86;
 }
-footer button {
-  padding: 5px 9px;
-}
 #touch {
-  display: none;
   position: absolute;
   inset: 0;
   pointer-events: none;
-  --control-scale: 1;
-}
-.playing #touch,
-.edit-controls #touch {
-  display: block;
+  z-index: 2;
 }
 .control {
   position: absolute;
   pointer-events: auto;
   touch-action: none;
   user-select: none;
-  transform: scale(var(--control-scale));
   border-radius: 50%;
-  background-color: #213c4ac9;
-  border: 2px solid #8fb6b6b0;
+  background-color: #213c4abf;
+  border: 2px solid #8fb6b6a0;
   color: #e5f1e9;
-  width: 65px;
-  height: 65px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-size: cover;
   font-size: 12px;
+  text-transform: capitalize;
+  transform-origin: top left;
 }
 #stick {
-  left: 5%;
-  bottom: 8%;
-  width: 110px;
-  height: 110px;
+  width: 108px;
+  height: 108px;
 }
 #stick span {
   border-radius: 50%;
   width: 44px;
   height: 44px;
-  background: #afc8bb77;
+  background: #afc8bb66;
   border: 2px solid #b8d6c5;
 }
 #jump {
-  right: 5%;
-  bottom: 9%;
   width: 78px;
   height: 78px;
-  background-color: #506746d9;
+  background-color: #506746bb;
   border-color: #c5d99e;
 }
-#dash {
-  right: 17%;
-  bottom: 6%;
-}
-#attack {
-  right: 12%;
-  bottom: 29%;
-}
-#left {
-  left: 3%;
-  bottom: 9%;
-}
-#right {
-  left: 18%;
-  bottom: 9%;
-}
-#down {
-  left: 10.5%;
-  bottom: 3%;
-}
-body[data-controls="joystick"] .direction {
+#touch[data-mode="joystick"] #left,
+#touch[data-mode="joystick"] #right,
+#touch[data-mode="joystick"] #down {
   display: none;
 }
-body[data-controls="buttons"] #stick {
+#touch[data-mode="buttons"] #stick {
   display: none;
 }
+.playing header,
+.playing .toolbar,
 .playing aside {
   display: none;
 }
-.playing #workspace {
-  padding: 0 12px;
-}
-.playing header {
-  height: 45px;
-}
-.playing .toolbar {
-  height: 48px;
-}
 .playing main {
-  height: calc(100dvh - 93px);
+  height: 100dvh;
 }
 .playing .stage-bar {
-  height: 30px;
+  height: 34px;
+  min-height: 34px;
 }
 .playing footer {
-  height: 32px;
+  height: 24px;
 }
-.edit-controls .control {
+.editing .control {
   border: 3px dashed #e4c582;
   cursor: move;
 }
-#pauseOverlay {
+#doneControls {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  background: #ced9b0;
+  color: #112923;
+}
+#overlay {
   position: absolute;
   inset: 0;
-  background: #091219cc;
-  z-index: 4;
+  background: #091219ed;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding-top: 15%;
-  backdrop-filter: blur(3px);
+  padding: 20px;
+}
+#overlay h2 {
+  font:
+    36px Georgia,
+    serif;
+  color: #dfd7b5;
+  margin: 8px;
+}
+#overlay p {
+  color: #a6bbba;
+  max-width: 560px;
+}
+#overlayActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 [hidden] {
   display: none !important;
 }
 #toast {
   position: fixed;
-  bottom: 20px;
+  bottom: 16px;
   left: 50%;
-  transform: translateX(-50%) translateY(100px);
+  transform: translateX(-50%) translateY(140px);
   background: #d8dfca;
   color: #182c2b;
-  padding: 12px 20px;
+  padding: 11px 17px;
   z-index: 20;
   border-radius: 6px;
   max-width: 90vw;
+  max-height: 40vh;
+  overflow: auto;
+  font-size: 13px;
   box-shadow: 0 8px 30px #0006;
   transition: transform 0.2s;
 }
@@ -397,14 +423,14 @@ body[data-controls="buttons"] #stick {
   transform: translateX(-50%);
 }
 dialog {
-  max-width: 570px;
-  max-height: 85dvh;
-  width: 90vw;
+  max-width: 660px;
+  max-height: 90dvh;
+  width: 92vw;
   background: #13262f;
   color: #dce6df;
   border: 1px solid #49666c;
   border-radius: 12px;
-  padding: 24px;
+  padding: 22px;
   line-height: 1.6;
 }
 dialog::backdrop {
@@ -420,52 +446,109 @@ dialog p {
   color: #a9bdbc;
 }
 dialog button {
-  margin: 5px;
+  margin: 4px;
 }
-.close {
+#closeDialog {
   float: right;
 }
 dialog a {
   color: #d8cd99;
 }
+.cards {
+  display: grid;
+  gap: 10px;
+}
+.cards button {
+  text-align: left;
+  padding: 16px;
+  font-size: 18px;
+}
+.cards small {
+  font-size: 12px;
+  color: #a1b5b5;
+}
+.chapter-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.chapter-list button {
+  text-align: left;
+  white-space: normal;
+  font-size: 12px;
+}
+#projectList {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+textarea {
+  width: 100%;
+  height: 120px;
+}
 .rotate {
   display: none;
 }
+#updateBanner {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 12px;
+  background: #d8dfca;
+  color: #182c2b;
+  border-radius: 6px;
+  box-shadow: 0 5px 20px #0006;
+  font-size: 13px;
+  max-width: 95vw;
+}
 @media (max-height: 550px) {
   header {
-    height: 42px;
-    padding: 0 12px;
+    height: 38px;
+    padding: 0 10px;
   }
   .brand {
-    font-size: 16px;
+    font-size: 15px;
   }
   .brand small {
-    display: none;
+    font-size: 9px;
+    margin-left: 3px;
+  }
+  nav {
+    gap: 1px;
+  }
+  nav button {
+    font-size: 11px;
+    padding: 5px 7px;
   }
   .toolbar {
-    height: 44px;
-    padding: 5px 10px;
-    gap: 5px;
+    height: 40px;
+    padding: 4px 8px;
   }
   .toolbar button {
-    padding: 6px 9px;
-    font-size: 12px;
+    padding: 5px 7px;
+    font-size: 11px;
   }
   .toolbar input {
-    width: 115px;
+    width: 105px;
+    font-size: 12px;
   }
   .toolbar select {
-    max-width: 145px;
+    max-width: 130px;
+    font-size: 12px;
   }
   main {
-    height: calc(100dvh - 86px);
+    height: calc(100dvh - 78px);
   }
   aside {
-    width: 155px;
-    padding: 10px;
+    width: 170px;
+    padding: 9px;
   }
   aside h1,
-  aside .subtle,
   .asset-credit {
     display: none;
   }
@@ -474,52 +557,54 @@ dialog a {
     gap: 1px;
   }
   #tools button {
-    padding: 4px;
-    font-size: 11px;
+    padding: 4px 1px;
+    font-size: 10px;
   }
   #tools button span {
-    font-size: 15px;
-  }
-  .room-options {
-    padding-top: 8px;
-  }
-  #workspace {
-    padding: 0 10px;
+    font-size: 13px;
+    width: 18px;
   }
   .stage-bar {
-    height: 28px;
+    min-height: 30px;
+    height: 30px;
+    font-size: 10px;
+    gap: 6px;
+    padding: 0 6px;
+  }
+  .stage-bar button {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+  .stage-bar .inline {
+    font-size: 10px;
   }
   footer {
-    height: 30px;
-    font-size: 9px;
-  }
-  .playing header {
-    height: 34px;
-  }
-  .playing .toolbar {
-    height: 38px;
-  }
-  .playing main {
-    height: calc(100dvh - 72px);
-  }
-  .playing footer #hint {
-    max-width: 60%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    height: 24px;
   }
   .control {
-    width: 52px;
-    height: 52px;
+    width: 54px;
+    height: 54px;
     font-size: 10px;
   }
   #stick {
-    width: 88px;
-    height: 88px;
+    width: 90px;
+    height: 90px;
   }
   #jump {
-    width: 65px;
-    height: 65px;
+    width: 66px;
+    height: 66px;
+  }
+  .playing footer {
+    height: 18px;
+  }
+  .playing .stage-bar {
+    min-height: 30px;
+    height: 30px;
+  }
+  #mode {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 @media (orientation: portrait) and (max-width: 800px) {
@@ -539,39 +624,4 @@ dialog a {
     font-size: 60px;
     color: #cbd8ad;
   }
-}
-/* Give the playfield priority on a landscape phone. */
-.playing header {
-  display: none;
-}
-.playing .toolbar {
-  justify-content: flex-end;
-  height: 36px;
-}
-.playing .toolbar > *:not(#play) {
-  display: none;
-}
-.playing main {
-  height: calc(100dvh - 36px);
-}
-.playing #play {
-  padding: 5px 12px;
-}
-
-#updateBanner {
-  position: fixed;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 8;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 6px 12px;
-  background: #d8dfca;
-  color: #182c2b;
-  border-radius: 6px;
-  box-shadow: 0 5px 20px #0006;
-  font-size: 13px;
-  max-width: 95vw;
 }

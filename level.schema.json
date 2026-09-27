@@ -8,7 +8,7 @@
     },
     "schemaVersion": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "name": {
       "type": "string",
@@ -17,7 +17,7 @@
     },
     "rooms": {
       "minItems": 1,
-      "maxItems": 30,
+      "maxItems": 100,
       "type": "array",
       "items": {
         "type": "object",
@@ -25,7 +25,7 @@
           "id": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 60
+            "maxLength": 80
           },
           "name": {
             "type": "string",
@@ -36,14 +36,16 @@
             "type": "object",
             "properties": {
               "x": {
-                "type": "integer",
+                "type": "number",
                 "minimum": 0,
-                "maximum": 39
+                "maximum": 79,
+                "multipleOf": 0.5
               },
               "y": {
-                "type": "integer",
+                "type": "number",
                 "minimum": 0,
-                "maximum": 21
+                "maximum": 43,
+                "multipleOf": 0.5
               }
             },
             "required": [
@@ -73,31 +75,49 @@
               },
               "pogo": {
                 "type": "boolean"
+              },
+              "longDash": {
+                "type": "boolean"
+              },
+              "grapple": {
+                "type": "boolean"
+              },
+              "swing": {
+                "type": "boolean"
               }
             },
             "required": [
               "dash",
               "doubleJump",
               "wallJump",
-              "pogo"
+              "pogo",
+              "longDash",
+              "grapple",
+              "swing"
             ],
             "additionalProperties": false
           },
           "objects": {
-            "maxItems": 880,
+            "maxItems": 2500,
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
                 "x": {
-                  "type": "integer",
+                  "type": "number",
                   "minimum": 0,
-                  "maximum": 39
+                  "maximum": 79,
+                  "multipleOf": 0.5
                 },
                 "y": {
-                  "type": "integer",
+                  "type": "number",
                   "minimum": 0,
-                  "maximum": 21
+                  "maximum": 43,
+                  "multipleOf": 0.5
+                },
+                "id": {
+                  "type": "string",
+                  "maxLength": 80
                 },
                 "kind": {
                   "type": "string",
@@ -105,19 +125,131 @@
                     "solid",
                     "spike",
                     "pogo",
+                    "enemy",
                     "crystal",
                     "checkpoint",
-                    "exit"
+                    "exit",
+                    "anchor",
+                    "moving",
+                    "timed",
+                    "switch",
+                    "door",
+                    "gravity",
+                    "pad"
+                  ]
+                },
+                "w": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.5,
+                  "maximum": 80,
+                  "multipleOf": 0.5
+                },
+                "h": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.5,
+                  "maximum": 44,
+                  "multipleOf": 0.5
+                },
+                "axis": {
+                  "default": "x",
+                  "type": "string",
+                  "enum": [
+                    "x",
+                    "y"
+                  ]
+                },
+                "travel": {
+                  "default": 4,
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 20
+                },
+                "speed": {
+                  "default": 70,
+                  "type": "number",
+                  "minimum": 10,
+                  "maximum": 300
+                },
+                "period": {
+                  "default": 2.5,
+                  "type": "number",
+                  "minimum": 0.5,
+                  "maximum": 12
+                },
+                "phase": {
+                  "default": 0,
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 12
+                },
+                "channel": {
+                  "default": "A",
+                  "type": "string",
+                  "maxLength": 30
+                },
+                "target": {
+                  "default": "next",
+                  "type": "string",
+                  "maxLength": 80
+                },
+                "anchorMode": {
+                  "default": "pull",
+                  "type": "string",
+                  "enum": [
+                    "pull",
+                    "swing"
+                  ]
+                },
+                "switchMode": {
+                  "default": "toggle",
+                  "type": "string",
+                  "enum": [
+                    "toggle",
+                    "hold"
+                  ]
+                },
+                "direction": {
+                  "default": "up",
+                  "type": "string",
+                  "enum": [
+                    "up",
+                    "down",
+                    "left",
+                    "right"
                   ]
                 }
               },
               "required": [
                 "x",
                 "y",
-                "kind"
+                "id",
+                "kind",
+                "w",
+                "h",
+                "axis",
+                "travel",
+                "speed",
+                "period",
+                "phase",
+                "channel",
+                "target",
+                "anchorMode",
+                "switchMode",
+                "direction"
               ],
               "additionalProperties": false
             }
+          },
+          "theme": {
+            "default": "palace",
+            "type": "string",
+            "enum": [
+              "palace",
+              "garden",
+              "furnace"
+            ]
           }
         },
         "required": [
@@ -126,7 +258,60 @@
           "spawn",
           "deathRule",
           "abilities",
-          "objects"
+          "objects",
+          "theme"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "clears": {
+      "default": [],
+      "maxItems": 100,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "physicsVersion": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "roomHash": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "inputs": {
+            "maxItems": 150000,
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 127
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        "required": [
+          "roomId",
+          "physicsVersion",
+          "roomHash",
+          "inputs"
         ],
         "additionalProperties": false
       }
@@ -136,7 +321,8 @@
     "format",
     "schemaVersion",
     "name",
-    "rooms"
+    "rooms",
+    "clears"
   ],
   "additionalProperties": false
 }

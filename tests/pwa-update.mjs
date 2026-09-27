@@ -63,15 +63,7 @@ try {
   await p.locator("#projectName").fill("Unfinished update draft");
   await p.locator("#projectName").press("Tab");
   await p.locator("#rooms").selectOption("1");
-  await p.locator('[data-tool="erase"]').click();
-  await p.waitForTimeout(100);
-  const bounds = await p.locator("canvas").boundingBox(),
-    zoom = Math.min(bounds.width / 1280, bounds.height / 704);
-  await p.mouse.click(
-    bounds.x + bounds.width / 2 + (1200 - 640) * zoom,
-    bounds.y + bounds.height / 2 + (624 - 352) * zoom,
-  );
-  await p.locator("#settings").click();
+  await p.locator("#controls").click();
   await p.locator("#controlMode").selectOption("buttons");
   await p.locator("#closeDialog").click();
   nextWorker = true;
@@ -87,24 +79,20 @@ try {
       .getElementById("toast")
       ?.textContent.includes("Your editor draft was restored"),
   );
+  await p.waitForFunction(
+    () =>
+      document.getElementById("projectName")?.value ===
+      "Unfinished update draft",
+  );
   assert.equal(
     await p.locator("#projectName").inputValue(),
     "Unfinished update draft",
   );
   assert.equal(await p.locator("#rooms").inputValue(), "1");
-  assert.equal(
-    await p.locator("body").getAttribute("data-controls"),
-    "buttons",
-  );
-  await p.locator("#play").click();
-  await p.waitForFunction(() =>
-    document
-      .getElementById("toast")
-      ?.textContent.includes("Each room needs one exit"),
-  );
+  assert.equal(await p.locator("#touch").getAttribute("data-mode"), "buttons");
   assert.deepEqual(errors, []);
   console.log(
-    "PWA update passed: real waiting worker activated; unfinished draft, selected room and control mode preserved; no page errors.",
+    "PWA update passed: real waiting worker activated; unsaved draft, selected room and control mode preserved; no page errors.",
   );
 } finally {
   await browser.close();

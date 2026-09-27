@@ -1,376 +1,65 @@
 {
   "format": "thornwake",
-  "schemaVersion": "1.0.0",
-  "name": "The silent palace",
+  "schemaVersion": "1.1.0",
+  "name": "My palace",
   "rooms": [
     {
-      "id": "79283ce1-130a-4dc9-ab05-04f119ecd66d",
-      "name": "01 · The waking steps",
+      "id": "e478d6c5-b5e0-402f-b4ad-1f59ed8d0776",
+      "name": "Untitled trial",
       "spawn": {
-        "x": 2,
-        "y": 18
+        "x": 3,
+        "y": 36
       },
       "deathRule": "instant",
       "abilities": {
         "dash": true,
         "doubleJump": true,
         "wallJump": true,
-        "pogo": true
+        "pogo": true,
+        "longDash": true,
+        "grapple": true,
+        "swing": true
       },
+      "theme": "palace",
       "objects": [
         {
           "x": 0,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 1,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 2,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 3,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 4,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 5,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 6,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 7,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 8,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 9,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 10,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 11,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 18,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 19,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 20,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 21,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 22,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 23,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 24,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 25,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 26,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 27,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 28,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 29,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 30,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 31,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 32,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 33,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 34,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 35,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 36,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 37,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 38,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 39,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 37,
-          "y": 19,
-          "kind": "exit"
-        },
-        {
-          "x": 7,
-          "y": 17,
-          "kind": "solid"
-        },
-        {
-          "x": 8,
-          "y": 17,
-          "kind": "solid"
-        },
-        {
-          "x": 9,
-          "y": 17,
-          "kind": "solid"
-        },
-        {
-          "x": 10,
-          "y": 17,
-          "kind": "solid"
-        },
-        {
-          "x": 19,
-          "y": 17,
-          "kind": "solid"
-        },
-        {
-          "x": 20,
-          "y": 17,
-          "kind": "solid"
-        },
-        {
-          "x": 21,
-          "y": 17,
-          "kind": "solid"
-        },
-        {
-          "x": 22,
-          "y": 17,
-          "kind": "solid"
-        },
-        {
-          "x": 15,
-          "y": 18,
-          "kind": "pogo"
-        },
-        {
-          "x": 25,
-          "y": 19,
-          "kind": "checkpoint"
-        },
-        {
-          "x": 29,
-          "y": 19,
-          "kind": "spike"
-        },
-        {
-          "x": 30,
-          "y": 19,
-          "kind": "spike"
-        },
-        {
-          "x": 33,
-          "y": 16,
-          "kind": "crystal"
-        }
-      ]
-    },
-    {
-      "id": "5e8048b4-0754-4f87-a7bd-aa0ae7172a0d",
-      "name": "02 · Across the thorns",
-      "spawn": {
-        "x": 2,
-        "y": 18
-      },
-      "deathRule": "health",
-      "abilities": {
-        "dash": true,
-        "doubleJump": true,
-        "wallJump": true,
-        "pogo": true
-      },
-      "objects": [
-        {
-          "x": 0,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 1,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 2,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 3,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 4,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 5,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 34,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 35,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 36,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 37,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 38,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 39,
-          "y": 20,
-          "kind": "solid"
-        },
-        {
-          "x": 37,
-          "y": 19,
-          "kind": "exit"
-        },
-        {
-          "x": 9,
-          "y": 18,
-          "kind": "pogo"
-        },
-        {
-          "x": 17,
-          "y": 18,
-          "kind": "pogo"
-        },
-        {
-          "x": 25,
-          "y": 18,
-          "kind": "pogo"
-        },
-        {
-          "x": 13,
-          "y": 15,
-          "kind": "crystal"
-        },
-        {
-          "x": 21,
-          "y": 15,
-          "kind": "crystal"
-        },
-        {
-          "x": 29,
-          "y": 15,
-          "kind": "crystal"
+          "y": 38,
+          "id": "6d886767-0046-46b7-a222-83f9ce6213cd",
+          "kind": "solid",
+          "w": 80,
+          "h": 6,
+          "axis": "x",
+          "travel": 4,
+          "speed": 70,
+          "period": 2.5,
+          "phase": 0,
+          "channel": "A",
+          "target": "next",
+          "anchorMode": "pull",
+          "switchMode": "toggle",
+          "direction": "up"
+        },
+        {
+          "x": 75,
+          "y": 37,
+          "id": "e056aca7-10d4-4602-bca2-8d0a63201291",
+          "kind": "exit",
+          "w": 1,
+          "h": 1,
+          "axis": "x",
+          "travel": 4,
+          "speed": 70,
+          "period": 2.5,
+          "phase": 0,
+          "channel": "A",
+          "target": "next",
+          "anchorMode": "pull",
+          "switchMode": "toggle",
+          "direction": "up"
         }
       ]
     }
-  ]
+  ],
+  "clears": []
 }

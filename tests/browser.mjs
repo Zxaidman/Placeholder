@@ -1,9 +1,9 @@
-import { readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
-const browser = await chromium.launch({
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+const b = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || undefined,
   headless: true,
   args: [
@@ -13,92 +13,139 @@ const browser = await chromium.launch({
     "--enable-unsafe-swiftshader",
   ],
 });
-const context = await browser.newContext({
-  viewport: { width: 1280, height: 800 },
-  acceptDownloads: true,
-});
-const page = await context.newPage(),
-  errors = [];
-page.on("pageerror", (e) => errors.push(e.message));
-await page.goto(process.env.TEST_URL || "http://127.0.0.1:5173");
-await page.locator("canvas").waitFor();
-await page.waitForTimeout(500);
-await page.screenshot({ path: join(tmpdir(), "thornwake-desktop.png") });
-const canvasBounds = await page.locator("canvas").boundingBox();
-const zoom = Math.min(canvasBounds.width / 1280, canvasBounds.height / 704);
-await page.mouse.click(
-  canvasBounds.x + canvasBounds.width / 2 + (176 - 640) * zoom,
-  canvasBounds.y + canvasBounds.height / 2 + (176 - 352) * zoom,
-);
-const paintedDownload = page.waitForEvent("download");
-await page.locator("#export").click();
-const painted = await paintedDownload;
-const paintedPath = join(tmpdir(), "thornwake-painted.json");
-await painted.saveAs(paintedPath);
-assert.ok(
-  JSON.parse(await readFile(paintedPath, "utf8")).rooms[0].objects.some(
-    (o) => o.kind === "solid" && o.x === 5 && o.y === 5,
-  ),
-  "Canvas painting writes the intended grid cell",
-);
-await page.locator("#undo").click();
-
-await page.locator("#projectName").fill("Browser test");
-await page.locator("#projectName").press("Tab");
-await page.locator("#save").click();
-await page.waitForFunction(() =>
-  document.getElementById("toast").textContent.startsWith("Project saved"),
-);
-await page.reload();
-await page.locator("canvas").waitFor();
-await page.waitForTimeout(300);
-assert.equal(await page.locator("#projectName").inputValue(), "Browser test");
-await page.locator("#addRoom").click();
-assert.equal(await page.locator("#rooms option").count(), 3);
-await page.locator("#undo").click();
-assert.equal(await page.locator("#rooms option").count(), 2);
-const downloadPromise = page.waitForEvent("download");
-await page.locator("#export").click();
-const d = await downloadPromise;
-assert.equal(d.suggestedFilename(), "thornwake-project.json");
-await d.saveAs(join(tmpdir(), "thornwake-export.json"));
-await page
-  .locator("#file")
-  .setInputFiles(join(tmpdir(), "thornwake-export.json"));
-await page.waitForTimeout(200);
-await page.locator("#play").click();
-await page.keyboard.down("KeyD");
-await page.waitForTimeout(300);
-await page.keyboard.press("Space");
-await page.keyboard.up("KeyD");
-await page.locator("#pause").click();
-assert.equal(await page.locator("#pauseOverlay").isVisible(), true);
-await page.locator("#resume").click();
-await page.locator("#play").click();
-await page.locator("#settings").click();
-await page.locator("#controlMode").selectOption("buttons");
-await page.locator("#reposition").click();
-await page.locator("#settings").click();
-assert.equal(await page.locator("#dialog").isVisible(), false);
-await page.setViewportSize({ width: 844, height: 390 });
-await page.locator("#play").click();
-await page.waitForTimeout(300);
-await page.screenshot({ path: join(tmpdir(), "thornwake-mobile.png") });
-assert.equal(await page.locator("#jump").isVisible(), true);
-assert.equal(
-  await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
-  false,
-);
-await page.locator("#ratio").selectOption("4/3");
-await page.waitForTimeout(100);
-const bounds = await page.locator("#stage").boundingBox();
-assert.ok(bounds.width > 100 && bounds.height > 100);
-assert.ok(
-  Math.abs(bounds.width / bounds.height - 4 / 3) < 0.1,
-  "Aspect ratio must be honored",
-);
-assert.deepEqual(errors, []);
-console.log(
-  "Browser checks passed: save/reload, rooms/undo, export/import, play/pause, controls, mobile, aspect ratio; no page errors.",
-);
-await browser.close();
+try {
+  const c = await b.newContext({
+    viewport: { width: 1280, height: 800 },
+    acceptDownloads: true,
+  });
+  const p = await c.newPage(),
+    errors = [];
+  p.on("pageerror", (e) => errors.push(e.message));
+  await p.goto(process.env.TEST_URL || "http://127.0.0.1:4173");
+  await p.locator("canvas").waitFor();
+  await p.waitForTimeout(200);
+  assert.equal(await p.locator("#rooms option").count(), 12);
+  await p.locator("#projectName").fill("V1 browser trial");
+  await p.locator("#projectName").press("Tab");
+  await p.locator("#save").click();
+  await p.waitForFunction(() =>
+    document.getElementById("toast").textContent.startsWith("Project saved"),
+  );
+  await p.reload();
+  await p.waitForFunction(
+    () => document.getElementById("projectName")?.value === "V1 browser trial",
+  );
+  await p.locator("#addRoom").click();
+  assert.equal(await p.locator("#rooms option").count(), 13);
+  await p.locator("#undo").click();
+  assert.equal(await p.locator("#rooms option").count(), 12);
+  await p.locator("#rooms").selectOption("0");
+  await p.locator("#fitRoom").click();
+  await p.waitForTimeout(100);
+  const bounds = await p.locator("canvas").boundingBox(),
+    zoom = Math.min(bounds.width / 2560, bounds.height / 1408);
+  const clickCell = (x, y) =>
+    p.mouse.click(
+      bounds.x + bounds.width / 2 + ((x + 0.5) * 32 - 1280) * zoom,
+      bounds.y + bounds.height / 2 + ((y + 0.5) * 32 - 704) * zoom,
+    );
+  await p.locator('[data-tool="moving"]').click();
+  await clickCell(70, 30);
+  await p.locator('[data-tool="select"]').click();
+  await clickCell(70, 30);
+  await p.getByLabel("Speed (units/s)", { exact: true }).fill("90");
+  await p.getByLabel("Speed (units/s)", { exact: true }).press("Tab");
+  await p.locator("#copy").click();
+  await clickCell(72, 32);
+  await p.locator("#paste").click();
+  const downloadPromise = p.waitForEvent("download");
+  await p.locator("#export").click();
+  const d = await downloadPromise;
+  await d.saveAs(join(tmpdir(), "thornwake-v1-export.json"));
+  const exported = JSON.parse(
+    await readFile(join(tmpdir(), "thornwake-v1-export.json"), "utf8"),
+  );
+  assert.equal(exported.schemaVersion, "1.1.0");
+  assert.ok(
+    exported.rooms[0].objects.some(
+      (o) => o.kind === "moving" && o.speed === 90,
+    ),
+  );
+  await p
+    .locator("#file")
+    .setInputFiles(join(tmpdir(), "thornwake-v1-export.json"));
+  await p.waitForFunction(() =>
+    document.getElementById("toast").textContent.startsWith("Imported"),
+  );
+  await p.locator("#play").click();
+  await p.keyboard.down("KeyD");
+  await p.waitForTimeout(300);
+  await p.keyboard.up("KeyD");
+  await p.locator("#pause").click();
+  assert.equal(await p.locator("#overlay").isVisible(), true);
+  await p.getByRole("button", { name: "Resume", exact: true }).click();
+  await p.locator("#returnEditor").click();
+  await p.screenshot({ path: join(tmpdir(), "thornwake-desktop.png") });
+  await p.locator("#campaign").click();
+  assert.equal(await p.locator("#chapters button").count(), 12);
+  assert.equal(await p.locator("#chapters button").nth(1).isDisabled(), true);
+  await p.locator("#practiceCampaign").check();
+  await p.locator("#chapters button").nth(7).click();
+  assert.ok((await p.locator("#mode").innerText()).includes("hanging garden"));
+  await p.locator("#home").click();
+  await p.locator("#chooseEndless").click();
+  await p.locator("#seed").fill("browser-certified");
+  await p.locator("#startRoom").fill("100");
+  await p.locator("#startEndless").click();
+  await p.waitForFunction(
+    () => document.getElementById("mode")?.textContent.includes("ENDLESS"),
+    { timeout: 20000 },
+  );
+  assert.ok((await p.locator("#mode").innerText()).includes("100"));
+  await p.setViewportSize({ width: 844, height: 390 });
+  await p.waitForTimeout(200);
+  const surface = await p.locator("#surface").boundingBox();
+  for (const ratio of ["4/3", "16/9", "full"]) {
+    await p.locator("#ratio").selectOption(ratio);
+    await p.waitForTimeout(100);
+    const v = await p.locator("#video").boundingBox(),
+      touch = await p.locator("#touch").boundingBox();
+    assert.ok(
+      Math.abs(touch.width - surface.width) < 1,
+      "Touch area must remain full width",
+    );
+    const canvas = await p.locator("canvas").boundingBox();
+    assert.ok(
+      Math.abs(canvas.width - v.width) < 1 &&
+        Math.abs(canvas.height - v.height) < 1,
+      "Canvas must match video viewport after aspect changes",
+    );
+    if (ratio !== "full") {
+      const [a, b] = ratio.split("/").map(Number);
+      assert.ok(
+        Math.abs(v.width / v.height - a / b) < 0.03,
+        "Only video receives the chosen aspect",
+      );
+    }
+    assert.equal(await p.locator("#jump").isVisible(), true);
+  }
+  await p.locator("#ratio").selectOption("4/3");
+  await p.screenshot({ path: join(tmpdir(), "thornwake-mobile.png") });
+  assert.equal(
+    await p.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+    false,
+  );
+  await p.locator("#controls").click();
+  await p.locator("#controlMode").selectOption("buttons");
+  await p.locator("#reposition").click();
+  await p.locator("#doneControls").click();
+  await p.getByRole("button", { name: "Resume", exact: true }).click();
+  assert.equal(await p.locator("#left").isVisible(), true);
+  assert.equal(await p.locator("#stick").isVisible(), false);
+  assert.deepEqual(errors, []);
+  console.log(
+    "Browser flows passed: creator paint/select/properties/copy, persistence/export/import, campaign practice/unlocks, certified endless room 100, mobile controls, independent video aspect ratios.",
+  );
+} finally {
+  await b.close();
+}

@@ -1,12 +1,20 @@
 # Changelog
 
+## 1.0.0
+
+- Expanded rooms from 40 × 22 to 80 × 44; added editor zoom/pan and half-cell properties.
+- Separated game-video aspect ratio from the full-width touch overlay.
+- Added 12-chapter campaign, movement unlocks, saved progress and practice selection.
+- Added seeded procedural endless mode, fixed-step route verification, survival/practice and recent-room backtracking.
+- Added charged long dash, pull anchors, rope swings, moving/timed platforms, gravity fields, launch pads, switches and channel doors.
+- Expanded creator selection/group copy, property editing, room links/reordering, project library, full backups and clear replay verification.
+- Retained offline installation, custom touch textures, open project import/export and URL sharing; migrated earlier project/control saves.
+- Added browser regressions covering creator, campaign, endless, mobile aspect ratios, offline loading and draft-preserving updates.
+
 ## 0.1.1
 
-- Add a persistent update banner and user-triggered service-worker activation.
-- Preserve unfinished editor drafts, current room, and touch settings across updates.
-- Check for updates when returning to the app and hourly while visible/online.
-- Pin the hosting Node.js major to 24 and run core tests before Vercel builds.
+- Preserved unfinished editor drafts through PWA updates.
 
 ## 0.1.0
 
-Initial creator-first prototype with Phaser/TypeScript, shared fixed-step controller, two connected demonstration rooms, touch controls, project import/export, local saving, compressed share links and offline production caching. See LIMITS_AND_ROADMAP.md for intentionally deferred features and unverified device targets.
+- Initial creator-first browser prototype and Vercel configuration.
