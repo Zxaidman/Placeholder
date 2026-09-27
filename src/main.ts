@@ -67,7 +67,19 @@ let progress: Progress = {
   endlessSeed: "first-root",
   endlessIndex: 0,
 };
-let prefs = { ratio: "full", zoom: 1.2, sound: true },
+const isHandheldTouchDevice = () =>
+  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const hasConnectedGamepad = () =>
+  Array.from(navigator.getGamepads?.() ?? []).some((pad) => pad?.connected);
+const defaultTouchControls = () =>
+  isHandheldTouchDevice() && !hasConnectedGamepad();
+let touchControlsExplicit = false;
+let prefs = {
+    ratio: "full",
+    zoom: 1.2,
+    sound: true,
+    touchControls: defaultTouchControls(),
+  },
   endlessSeed = "first-root",
   endlessIndex = 0,
   endlessSurvival = false,
@@ -135,6 +147,20 @@ function guard(action: () => Promise<unknown>) {
     );
 }
 const controls = new Controls($("touch"));
+window.addEventListener("gamepadconnected", () => {
+  if (!touchControlsExplicit) {
+    prefs.touchControls = false;
+    controls.enabled = playing && prefs.touchControls;
+    controls.apply();
+  }
+});
+window.addEventListener("gamepaddisconnected", () => {
+  if (!touchControlsExplicit && isHandheldTouchDevice() && !hasConnectedGamepad()) {
+    prefs.touchControls = true;
+    controls.enabled = playing && prefs.touchControls;
+    controls.apply();
+  }
+});
 controls.onPause = () => {
   if (playing) pause();
 };
@@ -496,7 +522,7 @@ $<HTMLSelectElement>("ratio").onchange = () => {
 };
 function setPlaying(value: boolean) {
   playing = value;
-  controls.enabled = value;
+  controls.enabled = value && prefs.touchControls;
   controls.release();
   controls.apply();
   document.body.classList.toggle("playing", value);
@@ -1221,7 +1247,7 @@ $("share").onclick = guard(async () => {
 });
 function settings() {
   showDialog(
-    `<h2>Play your way</h2><label>Camera zoom · wide to close<input id="gameZoom" type="range" min="1" max="2.5" step=".1" value="${prefs.zoom}"></label><label><input id="sound" type="checkbox" ${prefs.sound ? "checked" : ""}> Sound effects</label><button id="editControls">Touch controls</button><button id="verifyCurrent">Check clear replays</button><p>Video aspect ratio changes only the game image. Touch controls always use the full play surface, including side bars.</p><p>Version ${VERSION} · physics ${PHYSICS_VERSION}</p>`,
+    `<h2>Play your way</h2><label>Camera zoom · wide to close<input id="gameZoom" type="range" min="1" max="2.5" step=".1" value="${prefs.zoom}"></label><label><input id="sound" type="checkbox" ${prefs.sound ? "checked" : ""}> Sound effects</label><label><input id="touchControls" type="checkbox" ${prefs.touchControls ? "checked" : ""}> Show on-screen touch controls</label><button id="editControls">Touch controls</button><button id="verifyCurrent">Check clear replays</button><p>Video aspect ratio changes only the game image. Touch controls always use the full play surface, including side bars.</p><p>Version ${VERSION} · physics ${PHYSICS_VERSION}</p>`,
   );
   $<HTMLInputElement>("gameZoom").oninput = () => {
     prefs.zoom = Number($<HTMLInputElement>("gameZoom").value);
@@ -1232,12 +1258,19 @@ function settings() {
     prefs.sound = $<HTMLInputElement>("sound").checked;
     void save("preferences-v1", prefs);
   };
+  $("touchControls").onchange = () => {
+    touchControlsExplicit = true;
+    prefs.touchControls = $<HTMLInputElement>("touchControls").checked;
+    controls.enabled = playing && prefs.touchControls;
+    controls.apply();
+    void save("preferences-v1", prefs);
+  };
   $("editControls").onclick = controlSettings;
   $("verifyCurrent").onclick = offerVerification;
 }
 function controlSettings() {
   showDialog(
-    `<h2>Touch controls</h2><label>Movement<select id="controlMode"><option value="joystick">Fixed joystick</option><option value="buttons">Directional buttons</option></select></label><label>Size<input id="controlSize" type="range" min=".6" max="1.5" step=".05" value="${controls.preset.scale}"></label><label>Opacity<input id="controlOpacity" type="range" min=".2" max="1" step=".05" value="${controls.preset.opacity}"></label><button id="reposition">Drag controls into position</button><button id="saveControls">Save layout</button><button id="exportControls">Export layout</button><label>Import layout<input id="importControls" type="file" accept=".json"></label><label>Texture target<select id="textureTarget">${Object.keys(
+    `<h2>Touch controls</h2><label><input id="touchControls" type="checkbox" ${prefs.touchControls ? "checked" : ""}> Show on-screen controls</label><label>Movement<select id="controlMode"><option value="joystick">Fixed joystick</option><option value="buttons">Directional buttons</option></select></label><label>Size<input id="controlSize" type="range" min=".6" max="1.5" step=".05" value="${controls.preset.scale}"></label><label>Opacity<input id="controlOpacity" type="range" min=".2" max="1" step=".05" value="${controls.preset.opacity}"></label><button id="reposition">Drag controls into position</button><button id="saveControls">Save layout</button><button id="exportControls">Export layout</button><label>Import layout<input id="importControls" type="file" accept=".json"></label><label>Texture target<select id="textureTarget">${Object.keys(
       defaults().positions,
     )
       .map((k) => `<option>${k}</option>`)
@@ -1245,6 +1278,13 @@ function controlSettings() {
         "",
       )}</select></label><label>Custom PNG (256 KB, up to 1024 × 1024)<input id="texture" type="file" accept="image/png"></label><button id="resetControls">Reset layout</button>`,
   );
+  $<HTMLInputElement>("touchControls").onchange = () => {
+    touchControlsExplicit = true;
+    prefs.touchControls = $<HTMLInputElement>("touchControls").checked;
+    controls.enabled = playing && prefs.touchControls;
+    controls.apply();
+    void save("preferences-v1", prefs);
+  };
   $<HTMLSelectElement>("controlMode").value = controls.preset.mode;
   $<HTMLSelectElement>("controlMode").onchange = () => {
     controls.preset.mode = $<HTMLSelectElement>("controlMode").value as
@@ -1377,6 +1417,10 @@ function validatePreferences(raw: any) {
     ratio: ["full", "16/9", "4/3"].includes(raw?.ratio) ? raw.ratio : "full",
     zoom: Math.max(1, Math.min(2.5, Number(raw?.zoom) || 1.2)),
     sound: raw?.sound !== false,
+    touchControls:
+      typeof raw?.touchControls === "boolean"
+        ? raw.touchControls
+        : defaultTouchControls(),
   };
 }
 function validateProgress(raw: any): Progress {
@@ -1482,6 +1526,7 @@ void (async () => {
     progress = validateProgress(await load("progress-v1"));
     const settings = await load<typeof prefs>("preferences-v1");
     if (settings) {
+      touchControlsExplicit = typeof (settings as any)?.touchControls === "boolean";
       prefs = validatePreferences(settings);
     }
     if (!(await load("camera-v2"))) {
