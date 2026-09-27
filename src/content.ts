@@ -44,10 +44,49 @@ export const chapters = [
     "Use everything you learned. Checkpoints are scarce.",
   ],
 ];
+export function tutorial(): Project {
+  const r = blankRoom("First Steps · The Wayfinder");
+  r.id = "tutorial";
+  r.name = "First Steps · The Wayfinder";
+  r.theme = "garden";
+  r.deathRule = "health";
+  r.abilities = allAbilities();
+  r.spawn = { x: 3, y: 36 };
+  r.objects = [
+    tile("solid", 0, 38, { w: 80, h: 6 }),
+    tile("exit", 76, 35, { target: "finish" }),
+    tile("platform", 13, 34, { w: 4, h: 1 }),
+    tile("underPlatform", 13, 35, { w: 4, h: 1 }),
+    tile("platform", 20, 31, { w: 4, h: 1 }),
+    tile("underPlatform", 20, 32, { w: 4, h: 1 }),
+    tile("solid", 29, 27, { w: 2, h: 11 }),
+    tile("solid", 35, 22, { w: 2, h: 16 }),
+    tile("platform", 40, 31, { w: 5, h: 1 }),
+    tile("underPlatform", 40, 32, { w: 5, h: 1 }),
+    tile("pogo", 47, 36),
+    tile("pogo", 50, 33),
+    tile("checkpoint", 53, 35),
+    tile("anchor", 59, 29, { anchorMode: "pull" }),
+    tile("platform", 64, 31, { w: 4, h: 1 }),
+    tile("underPlatform", 64, 32, { w: 4, h: 1 }),
+    tile("anchor", 70, 24, { anchorMode: "swing" }),
+    tile("platform", 73, 30, { w: 4, h: 1 }),
+    tile("underPlatform", 73, 31, { w: 4, h: 1 }),
+  ];
+  r.objects.forEach((o, i) => (o.id = `tutorial-${i}`));
+  return {
+    format: "thornwake",
+    schemaVersion: "1.2.0",
+    name: "Wayfinder tutorial",
+    rooms: [r],
+    clears: [],
+  };
+}
+
 function base(n: number): Room {
   const r = blankRoom(chapters[n][0]);
   r.id = `campaign-${n}`;
-  r.theme = n < 4 ? "palace" : n < 8 ? "garden" : "furnace";
+  r.theme = n < 3 ? "palace" : n < 6 ? "garden" : n < 8 ? "mycelium" : n < 10 ? "furnace" : "drowned";
   r.abilities = Object.fromEntries(
     Object.keys(allAbilities()).map((k) => [
       k,
@@ -150,7 +189,7 @@ export function campaign(): Project {
   }
   return {
     format: "thornwake",
-    schemaVersion: "1.1.0",
+    schemaVersion: "1.2.0",
     name: "The silent palace",
     rooms,
     clears: [],
