@@ -23,7 +23,7 @@ import {
   type Kind,
   type Clear,
 } from "./model";
-import { campaign, chapters } from "./content";
+import { campaign, chapters, tutorial } from "./content";
 import { TrialScene, type EditTool } from "./scene";
 import { Controls, controlsSchema, defaults } from "./controls";
 import { World, verifyClear } from "./physics";
@@ -35,10 +35,10 @@ const $ = <T extends HTMLElement>(id: string) =>
 const app = $("app");
 app.innerHTML = `<header><div class="brand">✦ THORNWAKE <small>v${VERSION}</small></div><nav><button id="campaign">Campaign</button><button id="endless">Endless</button><button id="creator" class="active">Creator</button><button id="guide">Guide</button><button id="settings">Settings</button><button id="install" hidden>Install</button><button id="fullscreen" aria-label="Fullscreen">⛶</button></nav></header>
 <div class="toolbar" id="creatorToolbar"><input id="projectName" aria-label="Project name" maxlength="80"><select id="rooms" aria-label="Room"></select><button id="addRoom">＋ Room</button><button id="roomTools">Room tools</button><span class="spacer"></span><button id="undo" title="Undo">↶</button><button id="redo" title="Redo">↷</button><button id="projects">Projects</button><button id="save">Save</button><button id="import">Import</button><button id="export">Export</button><button id="share">Link</button><button id="play" class="primary">▶ Playtest</button></div>
-<main><aside id="palette"><p class="eyebrow">THE WORKSHOP</p><h1>Shape the way.</h1><div id="tools"></div><label><input type="checkbox" id="fineGrid"> Half-cell placement</label><label><input type="checkbox" id="multiSelect"> Add to selection</label><div class="smallrow"><button id="copy">Copy</button><button id="paste">Paste</button><button id="deleteObjects">Delete</button></div><label>Editor zoom<input id="editorZoom" type="range" min="1" max="5" step=".25" value="2"></label><div class="smallrow"><button id="fitRoom">Fit room</button><button id="focusSpawn">Focus spawn</button></div><section id="properties"></section><section class="room-options"><label>Room name<input id="roomName" maxlength="60"></label><label>Death rule<select id="deathRule"><option value="instant">Instant restart</option><option value="health">3 HP + checkpoints</option></select></label><label>Palette<select id="theme"><option value="palace">Silent palace</option><option value="garden">Hanging garden</option><option value="furnace">Ember halls</option></select></label><p class="eyebrow">MOVEMENT</p><div id="abilities"></div></section><p class="asset-credit">Kenney artwork · CC0<br>80 × 44 cells · 32 world units per cell</p></aside>
+<main><aside id="palette"><p class="eyebrow">THE WORKSHOP</p><h1>Shape the way.</h1><div id="tools"></div><label><input type="checkbox" id="fineGrid"> Half-cell placement</label><label><input type="checkbox" id="multiSelect"> Add to selection</label><div class="smallrow"><button id="copy">Copy</button><button id="paste">Paste</button><button id="deleteObjects">Delete</button></div><label>Editor zoom<input id="editorZoom" type="range" min="1" max="5" step=".25" value="2"></label><div class="smallrow"><button id="fitRoom">Fit room</button><button id="focusSpawn">Focus spawn</button></div><section id="properties"></section><section class="room-options"><label>Room name<input id="roomName" maxlength="60"></label><label>Death rule<select id="deathRule"><option value="instant">Instant restart</option><option value="health">3 HP + checkpoints</option></select></label><label>Region<select id="theme"><option value="palace">Silent palace</option><option value="garden">Hanging garden</option><option value="furnace">Ember halls</option><option value="mycelium">Mycelium wilds</option><option value="drowned">Drowned ruins</option></select></label><p class="eyebrow">MOVEMENT</p><div id="abilities"></div></section><p class="asset-credit">Kenney artwork · CC0<br>5 original region palettes · 80 × 44 cells · 32 world units per cell</p></aside>
 <section id="workspace"><div class="stage-bar"><span id="mode">CREATOR</span><span id="runStats">Drag to paint</span><span class="spacer"></span><label class="inline">Video <select id="ratio"><option value="full">Full</option><option value="16/9">16:9</option><option value="4/3">4:3</option></select></label><button id="controls">Controls</button><button id="home" hidden>Modes</button><button id="restart" hidden>Restart</button><button id="pause" hidden>Pause</button><button id="returnEditor" hidden>Editor</button></div><div id="surface"><div id="video"><div id="game"></div></div><div id="touch" hidden></div><div id="overlay" hidden><h2 id="overlayTitle">Paused</h2><p id="overlayText"></p><div id="overlayActions"></div></div><button id="doneControls" hidden>Done positioning</button></div><footer><span id="hint">Paint a route, place an exit, then play.</span><span id="clearState">UNVERIFIED</span></footer></section></main>
 <div id="updateBanner" hidden><span>New version ready</span><button id="reviewUpdate">Update available</button></div><div id="toast" role="status"></div><dialog id="dialog"><button id="closeDialog">Close ✕</button><div id="dialogBody"></div></dialog><input type="file" id="file" accept=".json,application/json" hidden><div class="rotate"><span>⛶</span><h2>Turn your device sideways</h2><p>Thornwake is designed for landscape play.</p></div>`;
-type Mode = "creator" | "campaign" | "endless";
+type Mode = "creator" | "campaign" | "endless" | "tutorial";
 let mode: Mode = "creator",
   project = campaign(),
   roomIndex = 0,
@@ -51,7 +51,8 @@ let mode: Mode = "creator",
   hudTime = 0;
 let campaignIndex = 0,
   campaignPractice = false,
-  campaignData = campaign();
+  campaignData = campaign(),
+  tutorialData = tutorial();
 type Progress = {
   campaignUnlocked: number;
   campaignCleared: number[];
@@ -74,7 +75,9 @@ let prefs = { ratio: "full", zoom: 1.2, sound: true },
 const cache = new Map<number, Generated>();
 let scene: TrialScene;
 const labels: Record<string, string> = {
-  solid: "Platform",
+  solid: "Block / Solid",
+  platform: "Walkable platform",
+  underPlatform: "Under-platform cell",
   spike: "Thorns",
   pogo: "Pogo target",
   enemy: "Moving enemy",
@@ -95,6 +98,8 @@ const labels: Record<string, string> = {
 };
 const icons: Record<string, string> = {
   solid: "▰",
+  platform: "━",
+  underPlatform: "▤",
   spike: "▲",
   pogo: "✺",
   enemy: "⊗",
@@ -169,7 +174,9 @@ const currentRoom = () =>
     ? project.rooms[roomIndex]
     : mode === "campaign"
       ? campaignData.rooms[campaignIndex]
-      : cache.get(endlessIndex)!.room;
+      : mode === "tutorial"
+        ? tutorialData.rooms[0]
+        : cache.get(endlessIndex)!.room;
 function snapshot() {
   history.push(JSON.stringify(project));
   if (history.length > 60) history.shift();
@@ -501,7 +508,9 @@ function setPlaying(value: boolean) {
     ? `${mode.toUpperCase()} · ${currentRoom().name}`
     : "CREATOR · 80 × 44";
   $("hint").textContent = value
-    ? "Move · Jump · Dash · Down + Attack = pogo · E / Hook = grapple"
+    ? mode === "tutorial"
+      ? "Follow the prompt above the traveller. Controls adapt to touch, keyboard or gamepad."
+      : "Move · Jump · Dash · Down + Attack = pogo · E / Hook = grapple"
     : "Choose a piece. Paint a path. Play your trial.";
   scene.playZoom = prefs.zoom;
   scene.setRoom(currentRoom(), value);
@@ -547,6 +556,7 @@ function restart() {
   scene.recording = true;
   scene.paused = false;
   controls.release();
+  if (mode === "tutorial") scene.resetTutorial();
   $("overlay").hidden = true;
 }
 function showDialog(html: string) {
@@ -584,8 +594,13 @@ $("restart").onclick = restart;
 $("home").onclick = showModes;
 function showModes() {
   showDialog(
-    '<p class="eyebrow">THORNWAKE · THE SILENT PALACE</p><h2>Beyond the thorns.</h2><p>Find your rhythm in a forgotten world.</p><div class="cards"><button id="chooseCampaign"><span class="card-number">01 / THE JOURNEY</span><strong>Campaign</strong><small>Learn its secrets. Master every movement.</small></button><button id="chooseEndless"><span class="card-number">02 / THE ASCENT</span><strong>Endless</strong><small>A new path. One room further.</small></button><button id="chooseCreator"><span class="card-number">03 / YOUR WORLD</span><strong>Creator</strong><small>Shape a trial worth sharing.</small></button></div>',
+    '<p class="eyebrow">THORNWAKE · THE SILENT PALACE</p><h2>Beyond the thorns.</h2><p>Find your rhythm in a forgotten world.</p><div class="cards"><button id="chooseTutorial"><span class="card-number">01 / THE WAYFINDER</span><strong>Tutorial</strong><small>Learn every movement in one playable route. Prompts stay above the traveller.</small></button><button id="chooseCampaign"><span class="card-number">02 / THE JOURNEY</span><strong>Campaign</strong><small>Learn its secrets. Master every movement.</small></button><button id="chooseEndless"><span class="card-number">03 / THE ASCENT</span><strong>Endless</strong><small>A new path. One room further.</small></button><button id="chooseCreator"><span class="card-number">04 / YOUR WORLD</span><strong>Creator</strong><small>Shape a trial worth sharing.</small></button></div>',
   );
+  $("chooseTutorial").onclick = () => {
+    mode = "tutorial";
+    $<HTMLDialogElement>("dialog").close();
+    setPlaying(true);
+  };
   $("chooseCampaign").onclick = showCampaign;
   $("chooseEndless").onclick = showEndless;
   $("chooseCreator").onclick = () => {
@@ -744,6 +759,18 @@ async function onEvent(
   event: { type: string; target?: string; exhausted?: boolean },
   log: [number, number][],
 ) {
+  if (mode === "tutorial" && event.type === "death") return;
+  if (mode === "tutorial" && event.type === "exit") {
+    overlay(
+      "Wayfinder complete",
+      "You have practiced the full movement set. The same prompts return whenever you restart the tutorial.",
+      [
+        { label: "Play tutorial again", run: restart },
+        { label: "Choose mode", run: showModes },
+      ],
+    );
+    return;
+  }
   if (event.type === "death") {
     if (mode === "endless" && endlessSurvival && scene.world.exhausted)
       overlay("The ascent ends", `You reached room ${endlessIndex + 1}.`, [
@@ -794,8 +821,9 @@ async function onEvent(
     }
     return;
   }
-  const data = mode === "campaign" ? campaignData : project,
-    index = mode === "campaign" ? campaignIndex : roomIndex,
+  const data =
+      mode === "campaign" ? campaignData : mode === "tutorial" ? tutorialData : project,
+    index = mode === "campaign" ? campaignIndex : mode === "tutorial" ? 0 : roomIndex,
     r = data.rooms[index];
   if (mode === "creator" && scene.recording) {
     const clear: Clear = {
@@ -1287,7 +1315,7 @@ $("settings").onclick = settings;
 $("controls").onclick = controlSettings;
 $("guide").onclick = () =>
   showDialog(
-    `<p class="eyebrow">FIELD NOTES · ${VERSION}</p><h2>Master the palace</h2><p><b>Move:</b> A/D or arrows. <b>Jump:</b> Space/W/Up, hold for height. <b>Dash:</b> Shift/K. <b>Pogo:</b> hold Down/S and press J/X. <b>Hook:</b> E.</p><p><b>Inspect a ledge:</b> stand still and hold Down for a moment. The camera looks along gravity. A faint marker shows the solid surface directly below you while airborne; it is not a predicted landing point.</p><p><b>Long dash:</b> hold Down + Dash on the ground until charged, then release Dash. <b>Clawline:</b> tap Hook at a cyan anchor. <b>Swing:</b> hold Hook at a cream anchor; release to launch.</p><p>Touch controls mirror these actions. Pull the joystick down for pogo/charging. Downward attacks also bounce on pink thorns and moving enemies. Cyan crystals restore air abilities.</p><p>Violet fields flip gravity on entry. Switches and doors with matching channel names are connected. Moving platforms carry you; fading platforms are solid for 65% of each cycle.</p><p>Creator: paint cells; use Select/move to edit object dimensions and properties. Shift-click or Add to selection builds groups. Copy/paste places groups at the last selected cell. Pan and zoom let you work on the larger 80 × 44 grid.</p><p>Endless rooms use generated geometry and a simulated clear route. Difficulty reaches a ceiling at room 100; route proof is not a guarantee of human difficulty or phone performance. Recent rooms can be revisited using the left portal.</p><p>Clear replays are local evidence, not anti-cheat certification. Export backups; browser storage can be cleared or evicted.</p><p>Art: <a href="https://kenney.nl/assets/1-bit-platformer-pack" target="_blank" rel="noopener">Kenney · CC0</a>. Sound effects are synthesized locally. No accounts or external assets are required during play.</p>`,
+    `<p class="eyebrow">FIELD NOTES · ${VERSION}</p><h2>Master the palace</h2><p><b>Move:</b> A/D or arrows. <b>Jump:</b> Space/W/Up, hold for height. <b>Dash:</b> Shift/K. <b>Pogo:</b> hold Down/S and press J/X. <b>Hook:</b> E. Standard gamepads use the left stick, A/✕ for jump, B/○ for dash and LB/L1 for Hook.</p><p><b>Inspect a ledge:</b> stand still and hold Down for a moment. The camera looks along gravity. A faint marker shows the solid surface directly below you while airborne; it is not a predicted landing point.</p><p><b>Long dash:</b> hold Down + Dash on the ground until charged, then release Dash. <b>Clawline:</b> tap Hook at a cyan anchor. <b>Swing:</b> hold Hook at a cream anchor; release to launch.</p><p>Touch controls mirror these actions. Pull the joystick down for pogo/charging. Downward attacks also bounce on pink thorns and moving enemies. Cyan crystals restore air abilities.</p><p>Violet fields flip gravity on entry. Switches and doors with matching channel names are connected. Moving platforms carry you; fading platforms are solid for 65% of each cycle.</p><p>Creator: paint cells; <b>Walkable platform</b> is the one-cell playable top and <b>Under-platform cell</b> is its separate support layer underneath. Select/move edits object dimensions and properties. Shift-click or Add to selection builds groups. Copy/paste places groups at the last selected cell. Pan and zoom let you work on the larger 80 × 44 grid.</p><p>Endless rooms use generated geometry and a simulated clear route. Difficulty reaches a ceiling at room 100; route proof is not a guarantee of human difficulty or phone performance. Recent rooms can be revisited using the left portal.</p><p>Clear replays are local evidence, not anti-cheat certification. Export backups; browser storage can be cleared or evicted.</p><p>Art: <a href="https://kenney.nl/assets/1-bit-platformer-pack" target="_blank" rel="noopener">Kenney · CC0</a>. Sound effects are synthesized locally. No accounts or external assets are required during play.</p>`,
   );
 $("fullscreen").onclick = guard(async () => {
   if (document.fullscreenElement) await document.exitFullscreen();
