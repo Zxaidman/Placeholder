@@ -100,9 +100,14 @@ try {
   assert.equal(await p.locator("#touchControls").isChecked(), false);
   await p.locator("#touchControls").check();
   await p.locator("#closeDialog").click();
-  await p.waitForTimeout(100);
+  await p.locator("#jump").waitFor({ state: "visible" });
+  await p.waitForFunction(() => {
+    const r = document.getElementById("jump")?.getBoundingClientRect();
+    return !!r && r.width > 0 && r.height > 0;
+  });
   assert.equal(await p.locator("#jump").isVisible(), true);
   const jumpBox = await p.locator("#jump").boundingBox();
+  assert.ok(jumpBox);
   await p.mouse.move(
     jumpBox.x + jumpBox.width / 2,
     jumpBox.y + jumpBox.height / 2,
