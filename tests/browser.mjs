@@ -95,6 +95,13 @@ try {
     document.getElementById("toast").textContent.startsWith("Imported"),
   );
   await p.locator("#play").click();
+  assert.equal(await p.locator("#jump").isVisible(), false);
+  await p.locator("#controls").click();
+  assert.equal(await p.locator("#touchControls").isChecked(), false);
+  await p.locator("#touchControls").check();
+  await p.locator("#closeDialog").click();
+  await p.waitForTimeout(100);
+  assert.equal(await p.locator("#jump").isVisible(), true);
   const jumpBox = await p.locator("#jump").boundingBox();
   await p.mouse.move(
     jumpBox.x + jumpBox.width / 2,
@@ -181,8 +188,47 @@ try {
   assert.equal(await p.locator("#left").isVisible(), true);
   assert.equal(await p.locator("#stick").isVisible(), false);
   assert.deepEqual(errors, []);
+
+  const mobile = await b.newContext({
+    viewport: { width: 844, height: 390 },
+    hasTouch: true,
+    userAgent:
+      "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36",
+  });
+  const mp = await mobile.newPage();
+  await mp.goto(process.env.TEST_URL || "http://127.0.0.1:4173");
+  await mp.waitForSelector("body[data-ready=true]");
+  await mp.locator("#chooseTutorial").click();
+  assert.equal(await mp.locator("#jump").isVisible(), true);
+  await mobile.close();
+
+  const gamepadMobile = await b.newContext({
+    viewport: { width: 844, height: 390 },
+    hasTouch: true,
+    userAgent:
+      "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36",
+  });
+  await gamepadMobile.addInitScript(() => {
+    Object.defineProperty(navigator, "getGamepads", {
+      configurable: true,
+      value: () => [
+        {
+          connected: true,
+          axes: [0, 0],
+          buttons: [],
+        },
+      ],
+    });
+  });
+  const gp = await gamepadMobile.newPage();
+  await gp.goto(process.env.TEST_URL || "http://127.0.0.1:4173");
+  await gp.waitForSelector("body[data-ready=true]");
+  await gp.locator("#chooseTutorial").click();
+  assert.equal(await gp.locator("#jump").isVisible(), false);
+  await gamepadMobile.close();
+
   console.log(
-    "Browser flows passed: creator paint/select/properties/copy, persistence/export/import, campaign practice/unlocks, certified endless room 100, mobile controls, independent video aspect ratios.",
+    "Browser flows passed: creator paint/select/properties/copy, persistence/export/import, campaign practice/unlocks, certified endless room 100, mobile defaults, explicit touch toggle, and independent video aspect ratios.",
   );
 } finally {
   await b.close();
