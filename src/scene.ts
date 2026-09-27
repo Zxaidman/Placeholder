@@ -174,7 +174,7 @@ export class TrialScene extends Phaser.Scene {
     this.visualY = room.spawn.y * TILE + 14;
     this.tutorialStage = room.id === "tutorial" ? 0 : -1;
     this.tutorialWallJumped = false;
-    this.tutorialBubble.setVisible(false);
+    this.tutorialBubble?.setVisible(false);
     this.rebuild();
   }
   resetTutorial() {
