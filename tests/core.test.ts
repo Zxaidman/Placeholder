@@ -15,7 +15,7 @@ import {
   verifyClear,
 } from "../src/physics";
 import { generateRoom, replayRoute } from "../src/generator";
-import { campaign } from "../src/content";
+import { campaign, tutorial } from "../src/content";
 describe("versioned projects", () => {
   it("round-trips rooms with all properties", () => {
     const p = blankProject();
@@ -28,7 +28,7 @@ describe("versioned projects", () => {
     const p = blankProject() as any;
     p.schemaVersion = "1.0.0";
     p.rooms[0].objects.forEach((o: any) => delete o.id);
-    expect(parseProject(JSON.stringify(p)).schemaVersion).toBe("1.1.0");
+    expect(parseProject(JSON.stringify(p)).schemaVersion).toBe("1.2.0");
   });
   it("rejects missing exits, dangling links and unsafe positions", () => {
     const p = blankProject();
@@ -43,14 +43,27 @@ describe("versioned projects", () => {
     expect(() => parseProject(JSON.stringify(p), true)).not.toThrow();
     expect(() => parseProject(JSON.stringify(p))).toThrow();
   });
-  it("all authored campaign rooms validate", () =>
-    expect(() => parseProject(JSON.stringify(campaign()))).not.toThrow());
+  it("all authored rooms validate", () => {
+    expect(() => parseProject(JSON.stringify(campaign()))).not.toThrow();
+    expect(() => parseProject(JSON.stringify(tutorial()))).not.toThrow();
+  });
+  it("platform and under-platform cells are both walkable", () => {
+    const r = blankRoom();
+    r.objects = [
+      tile("platform", 0, 37, { w: 10 }),
+      tile("underPlatform", 0, 38, { w: 10 }),
+      tile("exit", 8, 35),
+    ];
+    const w = new World(r);
+    for (let n = 0; n < 240; n++) w.tick(emptyInput());
+    expect(w.player.y + HEIGHT).toBe(37 * 32);
+  });
 });
 describe("movement and interaction", () => {
   it("lands without sinking", () => {
     const w = new World(blankRoom());
     for (let n = 0; n < 240; n++) w.tick(emptyInput());
-    expect(w.player.y + HEIGHT).toBe(38 * 32);
+    expect(w.player.y + HEIGHT).toBe(37 * 32);
   });
   it("short hops rise less than held jumps", () => {
     function height(hold: number) {
