@@ -190,10 +190,11 @@ export class TrialScene extends Phaser.Scene {
     const prompts = {
       keyboard: [
         "A / D\nMOVE",
-        "SPACE\nJUMP",
+        "SPACE / W\nJUMP",
         "SHIFT / K\nDASH",
         "SPACE AT WALL\nWALL JUMP",
         "SPACE AGAIN\nDOUBLE JUMP",
+        "J / X\nATTACK",
         "DOWN + J / X\nPOGO",
         "E\nCLAWLINE",
         "HOLD E\nSWING",
@@ -205,6 +206,7 @@ export class TrialScene extends Phaser.Scene {
         "DASH\nTAP",
         "JUMP AT WALL\nWALL JUMP",
         "JUMP AGAIN\nDOUBLE JUMP",
+        "ATTACK\nTAP",
         "DOWN + ATTACK\nPOGO",
         "HOOK\nCLAWLINE",
         "HOLD HOOK\nSWING",
@@ -216,13 +218,14 @@ export class TrialScene extends Phaser.Scene {
         "B / ○\nDASH",
         "A / ✕ AT WALL\nWALL JUMP",
         "A / ✕ AGAIN\nDOUBLE JUMP",
+        "X / □\nATTACK",
         "DOWN + X / □\nPOGO",
         "LB / L1\nCLAWLINE",
         "HOLD LB / L1\nSWING",
         "FOLLOW THE LIGHT\nREACH THE EXIT",
       ],
     } as const;
-    return prompts[this.tutorialInputFamily][Math.min(stage, 8)];
+    return prompts[this.tutorialInputFamily][Math.min(stage, 9)];
   }
   tutorialFocus(stage: number) {
     if (
@@ -234,12 +237,12 @@ export class TrialScene extends Phaser.Scene {
     this.tutorialFocusFamily = this.tutorialInputFamily;
     for (const el of document.querySelectorAll<HTMLElement>(".tutorial-focus"))
       el.classList.remove("tutorial-focus");
-    if (!this.playing || stage < 1 || this.tutorialInputFamily !== "touch") return;
+    if (!this.playing || stage < 0 || this.tutorialInputFamily !== "touch") return;
     const action =
-      stage === 1 ? "move" :
-      stage === 2 || stage === 4 || stage === 5 ? "jump" :
-      stage === 3 ? "dash" :
-      stage === 6 ? "attack" :
+      stage === 0 ? "move" :
+      stage === 1 || stage === 3 || stage === 4 ? "jump" :
+      stage === 2 ? "dash" :
+      stage === 5 || stage === 6 ? "attack" :
       stage === 7 || stage === 8 ? "hook" :
       null;
     if (!action) return;
@@ -270,14 +273,16 @@ export class TrialScene extends Phaser.Scene {
       this.tutorialStage = 4;
     else if (current === 4 && this.world.lastEvent === "jump" && !p.airJump)
       this.tutorialStage = 5;
-    else if (current === 5 && this.world.lastEvent === "pogo")
+    else if (current === 5 && this.world.lastEvent === "attack")
       this.tutorialStage = 6;
-    else if (current === 6 && p.grapple) {
+    else if (current === 6 && this.world.lastEvent === "pogo")
+      this.tutorialStage = 7;
+    else if (current === 7 && p.grapple) {
       const a = this.room.objects.find((o) => o.id === p.grapple);
-      if (a?.anchorMode === "pull") this.tutorialStage = 7;
-    } else if (current === 7 && p.grapple) {
+      if (a?.anchorMode === "pull") this.tutorialStage = 8;
+    } else if (current === 8 && p.grapple) {
       const a = this.room.objects.find((o) => o.id === p.grapple);
-      if (a?.anchorMode === "swing") this.tutorialStage = 8;
+      if (a?.anchorMode === "swing") this.tutorialStage = 9;
     }
     this.tutorialFocus(this.tutorialStage);
     const text = this.tutorialText(this.tutorialStage);
@@ -642,7 +647,7 @@ export class TrialScene extends Phaser.Scene {
       }
     }
     const targetX = p.x + 10,
-      targetY = p.y + 14,
+      targetY = p.y - 4,
       smoothing = Math.min(1, delta / 1000 * 18);
     this.visualX += (targetX - this.visualX) * smoothing;
     this.visualY += (targetY - this.visualY) * smoothing;
@@ -662,7 +667,7 @@ export class TrialScene extends Phaser.Scene {
     // Smoothed, expressive traveller: large mask, slim torso, segmented limbs,
     // rounded hand/foot ends, readable lean, and state-driven squash/stretch.
     g.fillStyle(0xa4e9d2, 0.09);
-    g.fillEllipse(px, py + 18 * flip, 36, 9);
+    g.fillEllipse(px, py + 26 * flip, 36, 8);
     g.save();
     g.translateCanvas(px, py - bob * flip);
     g.rotateCanvas(lean);
@@ -676,7 +681,7 @@ export class TrialScene extends Phaser.Scene {
 
     const legY = 17 * flip;
     const kneeY = 25 * flip;
-    const footY = 32 * flip;
+    const footY = 29 * flip * squash;
     const leftKnee = 4 - stride * 0.7;
     const rightKnee = 5 + stride * 0.7;
     g.lineStyle(5, 0x1a2830, 1);
