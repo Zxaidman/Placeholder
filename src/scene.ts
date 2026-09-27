@@ -51,7 +51,11 @@ export class TrialScene extends Phaser.Scene {
   tutorialStage = 0;
   tutorialWallJumped = false;
   tutorialInputFamily: "keyboard" | "touch" | "gamepad" =
-    "ontouchstart" in window && navigator.maxTouchPoints > 0 ? "touch" : "keyboard";
+    Array.from(navigator.getGamepads?.() ?? []).some((pad) => pad?.connected)
+      ? "gamepad"
+      : "ontouchstart" in window && navigator.maxTouchPoints > 0
+        ? "touch"
+        : "keyboard";
   tutorialBubble!: Phaser.GameObjects.Text;
   private tutorialFocusStage = -2;
   private tutorialFocusFamily = "";
