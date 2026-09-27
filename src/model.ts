@@ -198,7 +198,11 @@ export function blankRoom(name = "Untitled trial"): Room {
     deathRule: "instant",
     abilities: allAbilities(),
     theme: "palace",
-    objects: [tile("solid", 0, 38, { w: 80, h: 6 }), tile("exit", 75, 37)],
+    objects: [
+      tile("platform", 0, 37, { w: 80, h: 1 }),
+      tile("underPlatform", 0, 38, { w: 80, h: 6 }),
+      tile("exit", 75, 36),
+    ],
   };
 }
 export function blankProject(): Project {
