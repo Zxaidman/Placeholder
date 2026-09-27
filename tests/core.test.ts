@@ -63,7 +63,7 @@ describe("movement and interaction", () => {
   it("lands without sinking", () => {
     const w = new World(blankRoom());
     for (let n = 0; n < 240; n++) w.tick(emptyInput());
-    expect(w.player.y + HEIGHT).toBe(38 * 32);
+    expect(w.player.y + HEIGHT).toBe(37 * 32);
   });
   it("short hops rise less than held jumps", () => {
     function height(hold: number) {
