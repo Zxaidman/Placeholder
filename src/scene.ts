@@ -48,8 +48,6 @@ export class TrialScene extends Phaser.Scene {
   framing = new PlatformCamera();
   visualX = 0;
   visualY = 0;
-  visualScaleX = 1;
-  visualScaleY = 1;
   tutorialStage = 0;
   tutorialWallJumped = false;
   tutorialInputFamily: "keyboard" | "touch" | "gamepad" =
@@ -172,8 +170,6 @@ export class TrialScene extends Phaser.Scene {
     this.recording = true;
     this.visualX = room.spawn.x * TILE + 16;
     this.visualY = room.spawn.y * TILE + 14;
-    this.visualScaleX = 1;
-    this.visualScaleY = 1;
     this.tutorialStage = room.id === "tutorial" ? 0 : -1;
     this.tutorialWallJumped = false;
     this.tutorialBubble.setVisible(false);
@@ -243,6 +239,11 @@ export class TrialScene extends Phaser.Scene {
     }
   }
   updateTutorial() {
+    if (performance.now() - this.lastGamepadCheck > 500) {
+      this.lastGamepadCheck = performance.now();
+      if (Array.from(navigator.getGamepads?.() || []).some((pad) => pad?.connected))
+        this.tutorialInputFamily = "gamepad";
+    }
     if (!this.playing || this.room.id !== "tutorial") {
       this.tutorialBubble.setVisible(false);
       this.tutorialFocus(-1);
