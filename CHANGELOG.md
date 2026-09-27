@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0
+
+- Reworked presentation as a moonlit, overgrown palace: distant ruins, moss-edged masonry, soft lighting, motes, and an original botanical traveller.
+- Replaced the tight camera with wider framing, eased horizontal look-ahead, a vertical jump dead zone, and falling anticipation.
+- Redesigned the mode menu, workshop surfaces, dialogs and touch controls. The app opens to mode selection.
+- Kept movement physics/replay version unchanged; added focused camera regression tests.
+
 ## 1.0.0
 
 - Expanded rooms from 40 × 22 to 80 × 44; added editor zoom/pan and half-cell properties.

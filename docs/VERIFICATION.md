@@ -1,7 +1,8 @@
-# v1.0.0 verification
+# v1.1.0 verification
 
 Automated checks use Chromium with software rendering in the development environment. They are not physical-phone benchmarks.
 
+- Camera regression tests cover stable jump framing, eased look-ahead, falling anticipation and reset.
 - TypeScript production build and Vitest physics/project/generator tests.
 - Generated route replay for rooms 1–100 of seed `first-root`, plus alternate-seed difficulty-ceiling coverage.
 - Browser creator paint/select/property/copy/paste, save/reload, export/import, campaign unlock/practice UI, and generated room 100.

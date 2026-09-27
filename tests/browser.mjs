@@ -23,6 +23,11 @@ try {
   p.on("pageerror", (e) => errors.push(e.message));
   await p.goto(process.env.TEST_URL || "http://127.0.0.1:4173");
   await p.locator("canvas").waitFor();
+  await p.waitForSelector("body[data-ready=true]");
+  if (await p.locator("#chooseCreator").isVisible()) {
+    await p.screenshot({ path: join(tmpdir(), "thornwake-menu.png") });
+    await p.locator("#chooseCreator").click();
+  }
   await p.waitForTimeout(200);
   assert.equal(await p.locator("#rooms option").count(), 12);
   await p.locator("#projectName").fill("V1 browser trial");
@@ -35,6 +40,8 @@ try {
   await p.waitForFunction(
     () => document.getElementById("projectName")?.value === "V1 browser trial",
   );
+  if (await p.locator("#chooseCreator").isVisible())
+    await p.locator("#chooseCreator").click();
   await p.locator("#addRoom").click();
   assert.equal(await p.locator("#rooms option").count(), 13);
   await p.locator("#undo").click();

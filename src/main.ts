@@ -35,7 +35,7 @@ const $ = <T extends HTMLElement>(id: string) =>
 const app = $("app");
 app.innerHTML = `<header><div class="brand">✦ THORNWAKE <small>v${VERSION}</small></div><nav><button id="campaign">Campaign</button><button id="endless">Endless</button><button id="creator" class="active">Creator</button><button id="guide">Guide</button><button id="settings">Settings</button><button id="install" hidden>Install</button><button id="fullscreen" aria-label="Fullscreen">⛶</button></nav></header>
 <div class="toolbar" id="creatorToolbar"><input id="projectName" aria-label="Project name" maxlength="80"><select id="rooms" aria-label="Room"></select><button id="addRoom">＋ Room</button><button id="roomTools">Room tools</button><span class="spacer"></span><button id="undo" title="Undo">↶</button><button id="redo" title="Redo">↷</button><button id="projects">Projects</button><button id="save">Save</button><button id="import">Import</button><button id="export">Export</button><button id="share">Link</button><button id="play" class="primary">▶ Playtest</button></div>
-<main><aside id="palette"><p class="eyebrow">CREATE A TRIAL</p><h1>The room is yours.</h1><div id="tools"></div><label><input type="checkbox" id="fineGrid"> Half-cell placement</label><label><input type="checkbox" id="multiSelect"> Add to selection</label><div class="smallrow"><button id="copy">Copy</button><button id="paste">Paste</button><button id="deleteObjects">Delete</button></div><label>Editor zoom<input id="editorZoom" type="range" min="1" max="5" step=".25" value="2"></label><div class="smallrow"><button id="fitRoom">Fit room</button><button id="focusSpawn">Focus spawn</button></div><section id="properties"></section><section class="room-options"><label>Room name<input id="roomName" maxlength="60"></label><label>Death rule<select id="deathRule"><option value="instant">Instant restart</option><option value="health">3 HP + checkpoints</option></select></label><label>Palette<select id="theme"><option value="palace">Silent palace</option><option value="garden">Hanging garden</option><option value="furnace">Ember halls</option></select></label><p class="eyebrow">MOVEMENT</p><div id="abilities"></div></section><p class="asset-credit">Kenney artwork · CC0<br>80 × 44 cells · 32 world units per cell</p></aside>
+<main><aside id="palette"><p class="eyebrow">THE WORKSHOP</p><h1>Shape the way.</h1><div id="tools"></div><label><input type="checkbox" id="fineGrid"> Half-cell placement</label><label><input type="checkbox" id="multiSelect"> Add to selection</label><div class="smallrow"><button id="copy">Copy</button><button id="paste">Paste</button><button id="deleteObjects">Delete</button></div><label>Editor zoom<input id="editorZoom" type="range" min="1" max="5" step=".25" value="2"></label><div class="smallrow"><button id="fitRoom">Fit room</button><button id="focusSpawn">Focus spawn</button></div><section id="properties"></section><section class="room-options"><label>Room name<input id="roomName" maxlength="60"></label><label>Death rule<select id="deathRule"><option value="instant">Instant restart</option><option value="health">3 HP + checkpoints</option></select></label><label>Palette<select id="theme"><option value="palace">Silent palace</option><option value="garden">Hanging garden</option><option value="furnace">Ember halls</option></select></label><p class="eyebrow">MOVEMENT</p><div id="abilities"></div></section><p class="asset-credit">Kenney artwork · CC0<br>80 × 44 cells · 32 world units per cell</p></aside>
 <section id="workspace"><div class="stage-bar"><span id="mode">CREATOR</span><span id="runStats">Drag to paint</span><span class="spacer"></span><label class="inline">Video <select id="ratio"><option value="full">Full</option><option value="16/9">16:9</option><option value="4/3">4:3</option></select></label><button id="controls">Controls</button><button id="home" hidden>Modes</button><button id="restart" hidden>Restart</button><button id="pause" hidden>Pause</button><button id="returnEditor" hidden>Editor</button></div><div id="surface"><div id="video"><div id="game"></div></div><div id="touch" hidden></div><div id="overlay" hidden><h2 id="overlayTitle">Paused</h2><p id="overlayText"></p><div id="overlayActions"></div></div><button id="doneControls" hidden>Done positioning</button></div><footer><span id="hint">Paint a route, place an exit, then play.</span><span id="clearState">UNVERIFIED</span></footer></section></main>
 <div id="updateBanner" hidden><span>New version ready</span><button id="reviewUpdate">Update available</button></div><div id="toast" role="status"></div><dialog id="dialog"><button id="closeDialog">Close ✕</button><div id="dialogBody"></div></dialog><input type="file" id="file" accept=".json,application/json" hidden><div class="rotate"><span>⛶</span><h2>Turn your device sideways</h2><p>Thornwake is designed for landscape play.</p></div>`;
 type Mode = "creator" | "campaign" | "endless";
@@ -66,7 +66,7 @@ let progress: Progress = {
   endlessSeed: "first-root",
   endlessIndex: 0,
 };
-let prefs = { ratio: "full", zoom: 1.7, sound: true },
+let prefs = { ratio: "full", zoom: 1.2, sound: true },
   endlessSeed = "first-root",
   endlessIndex = 0,
   endlessSurvival = false,
@@ -305,8 +305,8 @@ const game = new Phaser.Game({
   width: 1280,
   height: 704,
   backgroundColor: "#101c24",
-  pixelArt: true,
-  render: { antialias: false },
+  pixelArt: false,
+  render: { antialias: true },
   scale: { mode: Phaser.Scale.NONE, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene,
 });
@@ -538,6 +538,7 @@ function pause() {
 }
 function restart() {
   scene.world.reset(true);
+  scene.framing.reset();
   scene.log = [];
   scene.recording = true;
   scene.paused = false;
@@ -579,7 +580,7 @@ $("restart").onclick = restart;
 $("home").onclick = showModes;
 function showModes() {
   showDialog(
-    '<h2>Choose your trial</h2><p>A handcrafted journey, an endless ascent, or a world of your own.</p><div class="cards"><button id="chooseCampaign">Campaign<br><small>12 authored trials · ability progression</small></button><button id="chooseEndless">Endless<br><small>Seeded geometry · certified routes</small></button><button id="chooseCreator">Creator<br><small>Build, connect, export and share</small></button></div>',
+    '<p class="eyebrow">THORNWAKE · THE SILENT PALACE</p><h2>Beyond the thorns.</h2><p>Find your rhythm in a forgotten world.</p><div class="cards"><button id="chooseCampaign"><span class="card-number">01 / THE JOURNEY</span><strong>Campaign</strong><small>Learn its secrets. Master every movement.</small></button><button id="chooseEndless"><span class="card-number">02 / THE ASCENT</span><strong>Endless</strong><small>A new path. One room further.</small></button><button id="chooseCreator"><span class="card-number">03 / YOUR WORLD</span><strong>Creator</strong><small>Shape a trial worth sharing.</small></button></div>',
   );
   $("chooseCampaign").onclick = showCampaign;
   $("chooseEndless").onclick = showEndless;
@@ -1188,7 +1189,7 @@ $("share").onclick = guard(async () => {
 });
 function settings() {
   showDialog(
-    `<h2>Play your way</h2><label>Game zoom<input id="gameZoom" type="range" min="1" max="2.5" step=".1" value="${prefs.zoom}"></label><label><input id="sound" type="checkbox" ${prefs.sound ? "checked" : ""}> Sound effects</label><button id="editControls">Touch controls</button><button id="verifyCurrent">Check clear replays</button><p>Video aspect ratio changes only the game image. Touch controls always use the full play surface, including side bars.</p><p>Version ${VERSION} · physics ${PHYSICS_VERSION}</p>`,
+    `<h2>Play your way</h2><label>Camera zoom · wide to close<input id="gameZoom" type="range" min="1" max="2.5" step=".1" value="${prefs.zoom}"></label><label><input id="sound" type="checkbox" ${prefs.sound ? "checked" : ""}> Sound effects</label><button id="editControls">Touch controls</button><button id="verifyCurrent">Check clear replays</button><p>Video aspect ratio changes only the game image. Touch controls always use the full play surface, including side bars.</p><p>Version ${VERSION} · physics ${PHYSICS_VERSION}</p>`,
   );
   $<HTMLInputElement>("gameZoom").oninput = () => {
     prefs.zoom = Number($<HTMLInputElement>("gameZoom").value);
@@ -1342,7 +1343,7 @@ window.addEventListener("beforeunload", (e) => {
 function validatePreferences(raw: any) {
   return {
     ratio: ["full", "16/9", "4/3"].includes(raw?.ratio) ? raw.ratio : "full",
-    zoom: Math.max(1, Math.min(2.5, Number(raw?.zoom) || 1.7)),
+    zoom: Math.max(1, Math.min(2.5, Number(raw?.zoom) || 1.2)),
     sound: raw?.sound !== false,
   };
 }
@@ -1451,11 +1452,19 @@ void (async () => {
     if (settings) {
       prefs = validatePreferences(settings);
     }
+    if (!(await load("camera-v2"))) {
+      prefs.zoom = 1.2;
+      await save("preferences-v1", prefs);
+      await save("camera-v2", true);
+    }
     $<HTMLSelectElement>("ratio").value = prefs.ratio;
     scene.playZoom = prefs.zoom;
     refresh();
     fitVideo();
+    if (!draftText && !location.hash.startsWith("#level=")) showModes();
+    document.body.dataset.ready = "true";
   } catch (e) {
+    document.body.dataset.ready = "true";
     toast(e instanceof Error ? e.message : "Could not restore local data");
     refresh();
   }

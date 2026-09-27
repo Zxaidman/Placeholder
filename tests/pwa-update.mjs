@@ -60,6 +60,9 @@ try {
   await p.reload();
   await p.waitForFunction(() => !!navigator.serviceWorker.controller);
   await p.locator("canvas").waitFor();
+  await p.waitForSelector("body[data-ready=true]");
+  if (await p.locator("#chooseCreator").isVisible())
+    await p.locator("#chooseCreator").click();
   await p.locator("#projectName").fill("Unfinished update draft");
   await p.locator("#projectName").press("Tab");
   await p.locator("#rooms").selectOption("1");

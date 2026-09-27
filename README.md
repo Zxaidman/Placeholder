@@ -1,4 +1,4 @@
-# Thornwake · v1.0.0
+# Thornwake · v1.1.0
 
 [Play Thornwake](https://thornwake.vercel.app/) — an installable, mobile-first precision platformer and room creator. Original game inspired by demanding platforming; it does not use Hollow Knight or Silksong assets, characters, or levels.
 
@@ -59,14 +59,14 @@ Vercel is connected to `Zxaidman/Placeholder`, production branch `main`. Pushes 
 
 ## Project format
 
-App version **1.0.0**, project schema **1.1.0**, physics replay version **1.0.0**. These versions serve different purposes. Earlier 1.0.0 project exports are migrated on import. See [level.schema.json](level.schema.json) and [example](examples/silent-palace.json). Positions and sizes are cells; one cell is 32 simulation units. Exit destinations accept room IDs, `next`, `previous`, or `finish`. Switches control doors with matching channels. Export validation checks links, bounds and spawns; it does not prove arbitrary user rooms beatable.
+App version **1.1.0**, project schema **1.1.0**, physics replay version **1.0.0**. These versions serve different purposes. Earlier 1.0.0 project exports are migrated on import. See [level.schema.json](level.schema.json) and [example](examples/silent-palace.json). Positions and sizes are cells; one cell is 32 simulation units. Exit destinations accept room IDs, `next`, `previous`, or `finish`. Switches control doors with matching channels. Export validation checks links, bounds and spawns; it does not prove arbitrary user rooms beatable.
 
 ## Honest limits
 
 Generated rooms are accepted only after a fixed-step simulation completes a zero-death route. That proves one route in this physics model, not human difficulty or universal performance. Geometry uses a supported jump/dash/timed-platform subset with optional pogo/hook supports; it does not generate every mechanic combination. Generation has a bounded attempt/time budget and reports failure rather than hanging. The practical room-index limit is 1,000,000, not mathematical infinity.
 
-The campaign has 12 rooms, not 100 handcrafted rooms or a large narrative world. Human difficulty labels and balance need playtesting. Two-GB 2020 Android hardware is a target, not a measured guarantee; physical-device performance testing remains outstanding. Art uses a compact free atlas and geometric effects; character animation is simple. There is no hosted level gallery or multiplayer. Clear replays are evidence, not anti-cheat, and stop recording after 20 minutes per attempt. See [verification](docs/VERIFICATION.md) and [limits](LIMITS_AND_ROADMAP.md).
+The campaign has 12 rooms, not 100 handcrafted rooms or a large narrative world. Human difficulty labels and balance need playtesting. Two-GB 2020 Android hardware is a target, not a measured guarantee; physical-device performance testing remains outstanding. Art combines an original vector traveller and palace scenery with a bundled free atlas; character animation is simple. There is no hosted level gallery or multiplayer. Clear replays are evidence, not anti-cheat, and stop recording after 20 minutes per attempt. See [verification](docs/VERIFICATION.md) and [limits](LIMITS_AND_ROADMAP.md).
 
 ## Assets and license
 
-Artwork: [Kenney 1-Bit Platformer Pack](https://kenney.nl/assets/1-bit-platformer-pack), **CC0**. The original license is included in `public/assets/Kenney-LICENSE.txt`; the atlas is served locally. Sound effects are synthesized in the browser. No Nintendo or Team Cherry assets are included. Code licensing has not been selected by the repository owner; asset licensing does not automatically license the code.
+Original palace scenery and botanical traveller are drawn in code. Bundled artwork: [Kenney 1-Bit Platformer Pack](https://kenney.nl/assets/1-bit-platformer-pack), **CC0**. The original license is included in `public/assets/Kenney-LICENSE.txt`; the atlas is served locally. Sound effects are synthesized in the browser. No Nintendo or Team Cherry assets are included. Code licensing has not been selected by the repository owner; asset licensing does not automatically license the code.

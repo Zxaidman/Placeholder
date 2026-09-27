@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { PlatformCamera } from "./camera";
 import { COLS, ROWS, TILE, type Room, type TileObject } from "./model";
 import { World, STEP, rect, active, recordInput, type Input } from "./physics";
 export type EditTool =
@@ -17,9 +18,9 @@ export type SceneHooks = {
   hud: (world: World) => void;
 };
 const palettes = {
-  palace: [0x10202b, 0x8eaaa0, 0x536f73],
-  garden: [0x101e20, 0x9fbc87, 0x4b7662],
-  furnace: [0x231b28, 0xc8a389, 0x855b6a],
+  palace: [0x101f2b, 0xb3c7ad, 0x435d65],
+  garden: [0x112928, 0xc6d7a0, 0x426b60],
+  furnace: [0x282033, 0xe4ba97, 0x785868],
 };
 export class TrialScene extends Phaser.Scene {
   room!: Room;
@@ -41,7 +42,8 @@ export class TrialScene extends Phaser.Scene {
   last = "";
   origin = { x: 0, y: 0 };
   cameraOrigin = { x: 0, y: 0 };
-  playZoom = 1.7;
+  playZoom = 1.2;
+  framing = new PlatformCamera();
   constructor(public hooks: SceneHooks) {
     super("trial");
   }
@@ -131,6 +133,7 @@ export class TrialScene extends Phaser.Scene {
     this.playing = playing;
     this.world = new World(room);
     this.paused = false;
+    this.framing.reset();
     this.accumulator = 0;
     this.log = [];
     this.recording = true;
@@ -144,26 +147,99 @@ export class TrialScene extends Phaser.Scene {
     const colors = palettes[this.room.theme];
     g.fillStyle(colors[0]);
     g.fillRect(0, 0, COLS * TILE, ROWS * TILE);
-    g.lineStyle(1, colors[2], this.playing ? 0.1 : 0.3);
-    for (let x = 0; x <= COLS; x++)
-      g.lineBetween(x * TILE, 0, x * TILE, ROWS * TILE);
-    for (let y = 0; y <= ROWS; y++)
-      g.lineBetween(0, y * TILE, COLS * TILE, y * TILE);
+    // Distant palace silhouettes are drawn once per room, never collidable.
+    for (let layer = 0; layer < 2; layer++) {
+      const spacing = layer ? 244 : 180;
+      for (let x = -80; x < COLS * TILE; x += spacing) {
+        const top = 800 + (Math.abs(x * 13) % 7) * 19 + layer * 110;
+        g.fillStyle(layer ? 0x29444c : 0x203841, layer ? 0.38 : 0.42);
+        g.fillRect(x, top, 70, ROWS * TILE - top);
+        g.fillEllipse(x + 35, top, 70, 150);
+        g.fillStyle(colors[0], 0.7);
+        g.fillRect(x + 14, top + 40, 42, 350);
+        g.fillEllipse(x + 35, top + 40, 42, 105);
+        g.lineStyle(2, colors[1], 0.06);
+        g.lineBetween(x + 35, top + 10, x + 35, top + 380);
+      }
+    }
+    // Soft pools of ambient light and hanging vegetation.
+    for (let n = 0; n < 22; n++) {
+      const x = (n * 193 + 73) % (COLS * TILE),
+        y = 180 + ((n * 137) % (ROWS * TILE - 200));
+      for (let radius = 120; radius > 0; radius -= 10) {
+        g.fillStyle(0xb7dec7, 0.002);
+        g.fillCircle(x, y, radius);
+      }
+      g.lineStyle(2, 0x5b9380, 0.18);
+      g.lineBetween(x, 0, x + 12, y * 0.45);
+      for (let j = 0; j < 8; j++) {
+        g.fillStyle(0x5b9380, 0.16);
+        g.fillEllipse(x + 12 + (j % 2 ? 5 : -5), y * 0.45 - j * 19, 16, 7);
+      }
+    }
+    for (let x = 40; x < COLS * TILE; x += 320) {
+      g.lineStyle(9, colors[2], 0.18);
+      g.strokeRoundedRect(x, 960, 180, 650, { tl: 90, tr: 90, bl: 0, br: 0 });
+      g.lineStyle(2, colors[1], 0.06);
+      g.strokeRoundedRect(x + 11, 972, 158, 625, {
+        tl: 79,
+        tr: 79,
+        bl: 0,
+        br: 0,
+      });
+      const ly = 1040 + (x % 3) * 24;
+      g.lineStyle(1, 0x87978c, 0.35);
+      g.lineBetween(x + 200, 850, x + 200, ly);
+      for (let radius = 65; radius > 5; radius -= 8) {
+        g.fillStyle(0xe8c38a, 0.008);
+        g.fillCircle(x + 200, ly, radius);
+      }
+      g.fillStyle(0xc8b385, 0.45);
+      g.fillRoundedRect(x + 197, ly - 5, 6, 10, 2);
+    }
+    if (!this.playing) {
+      g.lineStyle(1, colors[2], 0.25);
+      for (let x = 0; x <= COLS; x++)
+        g.lineBetween(x * TILE, 0, x * TILE, ROWS * TILE);
+      for (let y = 0; y <= ROWS; y++)
+        g.lineBetween(0, y * TILE, COLS * TILE, y * TILE);
+    }
     for (const o of this.room.objects.filter((o) => o.kind === "solid")) {
       const r = rect(o, 0);
-      g.fillStyle(colors[2], 0.6);
+      g.fillStyle(0x0b171f);
       g.fillRect(r.x, r.y, r.w, r.h);
+      g.fillStyle(colors[2]);
+      g.fillRect(r.x, r.y + 5, r.w, Math.max(1, r.h - 5));
+      g.fillStyle(0x101c25, 0.4);
+      g.fillRect(
+        r.x + 4,
+        r.y + 17,
+        Math.max(1, r.w - 8),
+        Math.max(1, r.h - 17),
+      );
+      g.lineStyle(1, colors[1], 0.13);
+      for (let y = r.y + 32; y < r.y + r.h; y += 32) {
+        g.lineBetween(r.x, y, r.x + r.w, y);
+        for (
+          let x = r.x + (((y - r.y) / 32) % 2 ? 24 : 48);
+          x < r.x + r.w;
+          x += 64
+        )
+          g.lineBetween(x, y, x, Math.min(y + 32, r.y + r.h));
+      }
       g.fillStyle(colors[1]);
-      g.fillRect(r.x, r.y, r.w, 3);
-      for (let x = 0; x < o.w; x++)
-        this.art.add(
-          this.add
-            .image(r.x + x * TILE + 16, r.y + 17, "tiles", 7)
-            .setDisplaySize(28, 28)
-            .setTint(colors[2]),
-        );
+      g.fillRect(r.x, r.y, r.w, 4);
+      g.fillStyle(0x799d79);
+      g.fillRect(r.x, r.y + 4, r.w, 3);
+      for (let x = r.x + 7; x < r.x + r.w - 3; x += 19) {
+        g.fillStyle(0x799d79, 0.7);
+        g.fillTriangle(x, r.y + 5, x + 8, r.y + 5, x + 2, r.y + 13 + (x % 7));
+        g.lineStyle(1, colors[1], 0.6);
+        g.lineBetween(x, r.y, x - 3, r.y - 4);
+      }
     }
   }
+
   update(_t: number, delta: number) {
     if (!this.room || !this.dynamic) return;
     if (this.playing && !this.paused) {
@@ -187,9 +263,16 @@ export class TrialScene extends Phaser.Scene {
     }
     const camera = this.cameras.main;
     if (this.playing) {
-      camera.setZoom((this.scale.height / 440) * this.playZoom);
+      const zoom = (this.scale.height / 660) * this.playZoom;
+      camera.setZoom(zoom);
       camera.setBounds(0, 0, COLS * TILE, ROWS * TILE);
-      camera.centerOn(this.world.player.x + 10, this.world.player.y - 45);
+      const center = this.framing.update(
+        this.world.player,
+        this.scale.width / zoom,
+        this.scale.height / zoom,
+        delta / 1000,
+      );
+      camera.centerOn(center.x, center.y);
     } else {
       camera.removeBounds();
       camera.setZoom(
@@ -245,6 +328,10 @@ export class TrialScene extends Phaser.Scene {
           break;
         }
         case "checkpoint":
+          g.fillStyle(0xeac781, 0.06);
+          g.fillCircle(x + 16, y + 14, 42);
+          g.fillStyle(0xeac781, 0.1);
+          g.fillCircle(x + 16, y + 14, 24);
           g.lineStyle(3, 0xeac781);
           g.lineBetween(x + 6, y + 31, x + 6, y);
           g.fillStyle(0xeac781);
@@ -252,8 +339,13 @@ export class TrialScene extends Phaser.Scene {
           break;
         case "exit":
           g.lineStyle(3, 0xbbdfb4);
-          g.strokeRect(x + 2, y + 1, r.w - 4, r.h - 2);
-          g.fillStyle(0xbbdfb4, 0.2);
+          g.strokeRoundedRect(x + 2, y + 1, r.w - 4, r.h - 2, {
+            tl: 14,
+            tr: 14,
+            bl: 0,
+            br: 0,
+          });
+          g.fillStyle(0xbbdfb4, 0.12);
           g.fillRect(x + 6, y + 4, r.w - 12, r.h - 8);
           break;
         case "anchor":
@@ -315,13 +407,62 @@ export class TrialScene extends Phaser.Scene {
           x: this.room.spawn.x * 32 + 6,
           y: this.room.spawn.y * 32,
         };
-    this.playerSprite
-      .setPosition(p.x - 3, p.y - 4)
-      .setFlipX(p.face < 0)
-      .setFlipY(p.gravity < 0)
-      .setTint(p.dashTime > 0 ? 0x9cf7e0 : 0xf4e7b6);
-    const stretch = this.playing && Math.abs(p.vy) > 250 ? 1.1 : 1;
-    this.playerSprite.setDisplaySize(26 / stretch, 34 * stretch);
+    this.playerSprite.setVisible(false);
+    const px = p.x + 10,
+      py = p.y + 14,
+      flip = p.gravity;
+    const stride =
+      this.playing && p.grounded
+        ? Math.sin(w.time * 19) * Math.min(3, Math.abs(p.vx) / 90)
+        : 1;
+    // Original botanical traveller: cream mask, coral cloak, flexible legs.
+    g.fillStyle(0xa4e9d2, 0.07);
+    g.fillCircle(px, py, 25);
+    g.lineStyle(3, 0x101b26);
+    g.lineBetween(px - 4, py + 5 * flip, px - 5 - stride, py + 14 * flip);
+    g.lineBetween(px + 4, py + 5 * flip, px + 5 + stride, py + 14 * flip);
+    g.fillStyle(p.dashTime > 0 ? 0xa3e9d5 : 0xb96567);
+    g.fillTriangle(
+      px,
+      py - 6 * flip,
+      px - 12 - p.vx * 0.006,
+      py + 9 * flip,
+      px + 11 - p.vx * 0.006,
+      py + 9 * flip,
+    );
+    g.fillStyle(0xefdfb8);
+    g.fillEllipse(px, py - 8 * flip, 18, 17);
+    g.fillStyle(0x213b43);
+    g.fillEllipse(px - 3 + p.face * 2, py - 8 * flip, 2.5, 5);
+    g.fillEllipse(px + 3 + p.face * 2, py - 8 * flip, 2.5, 5);
+    g.fillStyle(0x8cbea2);
+    g.fillTriangle(
+      px - 1,
+      py - 15 * flip,
+      px - 11,
+      py - 24 * flip,
+      px - 6,
+      py - 13 * flip,
+    );
+    g.fillTriangle(
+      px + 1,
+      py - 15 * flip,
+      px + 9,
+      py - 22 * flip,
+      px + 6,
+      py - 13 * flip,
+    );
+    // A restrained field of motes makes depth legible without obscuring hazards.
+    if (this.playing)
+      for (let n = 0; n < 24; n++) {
+        const x = (n * 139 + Math.sin(w.time * 0.3 + n) * 13) % (COLS * TILE);
+        const y =
+          220 +
+          ((n * 173) % (ROWS * TILE - 260)) +
+          Math.sin(w.time * 0.6 + n) * 9;
+        g.fillStyle(0xecd99b, 0.25 + Math.sin(w.time + n) * 0.12);
+        g.fillCircle(x, y, 1.3);
+      }
     if (p.attackTime > 0 && this.playing) {
       g.lineStyle(4, 0xf6e4b4);
       const y = p.y + (p.gravity > 0 ? 44 : -16);

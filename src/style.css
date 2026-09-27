@@ -625,3 +625,302 @@ textarea {
     color: #cbd8ad;
   }
 }
+
+/* Moonlit palace — shared game and workshop visual language. */
+:root {
+  color: #e5e5d9;
+  background: #0c171e;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+header {
+  background: #0d1c23;
+  border-bottom-color: #d4ddbf16;
+}
+.brand {
+  letter-spacing: 4px;
+  color: #eee1bc;
+}
+.brand small {
+  color: #7e9b94;
+  font-size: 9px;
+}
+button {
+  border-color: #a4c7b424;
+  background: #203339;
+  border-radius: 9px;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
+}
+button:hover {
+  background: #2b4648;
+  border-color: #b2c9ae77;
+}
+button:active {
+  transform: translateY(1px);
+}
+button.active {
+  background: #b5c5a521;
+  border-color: #b5c5a566;
+}
+.primary {
+  background: #decfa5;
+  border-color: #decfa5;
+  color: #182c2b;
+  box-shadow: 0 3px 16px #ddcda516;
+}
+.primary:hover {
+  background: #f0dfb1;
+}
+input,
+select,
+textarea {
+  border-color: #b3c7b326;
+  background: #0f2129;
+  border-radius: 8px;
+}
+.toolbar {
+  background: #14252d;
+  border-bottom-color: #9fbeaa19;
+}
+aside {
+  background: linear-gradient(165deg, #172d33, #102029);
+  border-right-color: #9fbeaa1c;
+}
+h1 {
+  color: #e4dcbb;
+  font-size: 28px;
+}
+.eyebrow {
+  color: #9eb59e;
+  font-size: 9px;
+  letter-spacing: 2.3px;
+}
+#tools {
+  gap: 6px;
+}
+#tools button {
+  border-color: transparent;
+  background: #243a3f66;
+  padding: 10px 8px;
+}
+#tools button.active {
+  border-color: #d8c79588;
+  background: #d8c79518;
+  color: #f2e2b4;
+}
+#tools button span {
+  color: #b9c6a9;
+}
+.stage-bar {
+  background: #101f27;
+  border-bottom: 1px solid #a5c8b518;
+}
+footer {
+  background: #0e1c24;
+  color: #91aaa4;
+}
+#surface {
+  background: radial-gradient(ellipse at 50% 70%, #203c3e, #0c171e 72%);
+}
+#video {
+  box-shadow: 0 0 70px #0005;
+}
+.control {
+  border: 1px solid #c4d8c96b;
+  background-color: #162b31a6;
+  box-shadow:
+    inset 0 0 0 5px #b9d2ba0b,
+    0 3px 16px #0002;
+  color: #e5e6d0;
+  letter-spacing: 0.5px;
+  font-size: 10px;
+}
+#jump {
+  background-color: #b8c19b33;
+  border-color: #e5d5a2bb;
+  box-shadow: inset 0 0 0 5px #d9d3a811;
+}
+#stick {
+  border-color: #a8c5b14d;
+  background-color: #17323780;
+}
+#stick span {
+  background: #acc7b142;
+  border: 1px solid #cbd8be99;
+  box-shadow: 0 0 20px #9dd5b210;
+}
+#toast {
+  background: #1c383bed;
+  color: #e9e2c7;
+  border: 1px solid #b6c6aa42;
+  border-radius: 12px;
+  font-size: 12px;
+  bottom: 36px;
+  box-shadow: 0 12px 35px #0005;
+}
+dialog {
+  background: linear-gradient(135deg, #20373c, #11232d 75%);
+  border: 1px solid #d2d4ad36;
+  border-radius: 20px;
+  box-shadow: 0 30px 100px #0008;
+  padding: 28px;
+}
+dialog::backdrop {
+  background: #030c13bf;
+  backdrop-filter: blur(5px);
+}
+dialog h2 {
+  font-size: 36px;
+  line-height: 1.15;
+  margin: 15px 0 20px;
+  color: #f0e3bf;
+  font-weight: normal;
+}
+dialog p {
+  color: #abc0b8;
+}
+#closeDialog {
+  background: transparent;
+  border-color: transparent;
+  font-size: 11px;
+  color: #afc3b7;
+}
+.chapter-list {
+  gap: 8px;
+}
+.chapter-list button {
+  padding: 16px;
+  background: #91b6a00c;
+  border-color: #adc7b426;
+}
+.chapter-list button:disabled {
+  opacity: 0.32;
+}
+dialog:has(#chooseCampaign) {
+  max-width: 900px;
+  padding: 44px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 80% 5%, #41605b77, transparent 55%),
+    linear-gradient(120deg, #182c35, #10202a);
+}
+dialog:has(#chooseCampaign)::before {
+  content: "";
+  position: absolute;
+  right: 60px;
+  top: 30px;
+  width: 110px;
+  height: 260px;
+  border: 20px solid #adc9b20b;
+  border-radius: 100px 100px 0 0;
+  transform: rotate(12deg);
+  pointer-events: none;
+}
+dialog:has(#chooseCampaign) h2 {
+  font-size: clamp(36px, 6vw, 64px);
+  letter-spacing: -2px;
+  max-width: 600px;
+  margin-top: 30px;
+}
+.cards {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 34px;
+  position: relative;
+}
+.cards button {
+  min-height: 185px;
+  padding: 24px 20px;
+  margin: 0;
+  white-space: normal;
+  border-color: #d6d8b12e;
+  background: linear-gradient(155deg, #a8c2a316, #162b32);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.cards button:hover {
+  border-color: #dccd9b99;
+  background: linear-gradient(155deg, #a8c2a32b, #203c41);
+  transform: translateY(-3px);
+}
+.card-number {
+  font-size: 9px;
+  color: #a7baaa;
+  letter-spacing: 1.6px;
+}
+.cards strong {
+  margin: 27px 0 8px;
+  font:
+    28px Georgia,
+    serif;
+  color: #eadeb9;
+}
+.cards small {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #9fb7b0;
+}
+@media (max-width: 700px) {
+  dialog {
+    padding: 18px;
+    border-radius: 14px;
+  }
+  dialog:has(#chooseCampaign) {
+    padding: 20px;
+  }
+  dialog:has(#chooseCampaign) h2 {
+    font-size: 38px;
+    margin-top: 12px;
+  }
+  .cards {
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .cards button {
+    min-height: 138px;
+    padding: 14px 10px;
+  }
+  .cards strong {
+    font-size: 23px;
+    margin: 20px 0 8px;
+  }
+  .cards small {
+    font-size: 10px;
+  }
+  .card-number {
+    font-size: 8px;
+    letter-spacing: 0.8px;
+  }
+}
+@media (max-height: 500px) {
+  dialog:has(#chooseCampaign) {
+    padding: 16px 26px;
+  }
+  dialog:has(#chooseCampaign) h2 {
+    font-size: 36px;
+    margin: 6px 0;
+  }
+  dialog:has(#chooseCampaign) p {
+    margin: 6px 0;
+  }
+  .cards {
+    margin-top: 16px;
+  }
+  .cards button {
+    min-height: 125px;
+    padding: 15px;
+  }
+  .cards strong {
+    margin: 14px 0 5px;
+    font-size: 25px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  button,
+  #toast {
+    transition: none;
+  }
+}

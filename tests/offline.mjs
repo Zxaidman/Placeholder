@@ -23,13 +23,20 @@ await p.waitForFunction(() => !!navigator.serviceWorker.controller);
 await c.setOffline(true);
 await p.reload();
 await p.locator("canvas").waitFor();
+await p.waitForSelector("body[data-ready=true]");
+if (await p.locator("#chooseCreator").isVisible())
+  await p.locator("#chooseCreator").click();
 await p.locator("#play").click();
 assert.equal(await p.locator("#pause").isVisible(), true);
 await p.locator("#home").click();
 await p.locator("#chooseEndless").click();
 await p.locator("#seed").fill("offline-worker");
 await p.locator("#startEndless").click();
-await p.waitForFunction(() => document.getElementById("mode")?.textContent.includes("ENDLESS"));
+await p.waitForFunction(() =>
+  document.getElementById("mode")?.textContent.includes("ENDLESS"),
+);
 assert.deepEqual(errors, []);
-console.log("Offline production reload, playtest and procedural worker passed.");
+console.log(
+  "Offline production reload, playtest and procedural worker passed.",
+);
 await b.close();
