@@ -1,5 +1,5 @@
 import { z } from "zod";
-export const VERSION = "1.2.0",
+export const VERSION = "1.2.1",
   PHYSICS_VERSION = "1.0.0";
 export const COLS = 80,
   ROWS = 44,
