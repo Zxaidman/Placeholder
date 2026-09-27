@@ -1,6 +1,6 @@
 {
   "name": "thornwake",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Thornwake creator-first precision platformer",
   "directories": {
     "test": "tests"
