@@ -170,7 +170,7 @@ export class World {
     p.attackTime = Math.max(0, p.attackTime - dt);
     if (attack) {
       p.attackTime = i.down && abilities.pogo ? 0.18 : 0.12;
-      this.lastEvent = i.down && abilities.pogo ? "attack" : "attack";
+      this.lastEvent = "attack";
     }
     if (i.axis) p.face = Math.sign(i.axis);
     if (p.buffer > 0) {
