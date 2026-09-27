@@ -23,7 +23,17 @@ try {
   p.on("pageerror", (e) => errors.push(e.message));
   await p.goto(process.env.TEST_URL || "http://127.0.0.1:4173");
   await p.locator("canvas").waitFor();
-  await p.waitForSelector("body[data-ready=true]");
+  try {
+    await p.waitForSelector("body[data-ready=true]", { timeout: 30000 });
+  } catch (error) {
+    console.error("Thornwake boot diagnostics:", JSON.stringify({
+      errors,
+      url: await p.url(),
+      bodyClass: await p.locator("body").getAttribute("class"),
+      bodyText: (await p.locator("body").innerText()).slice(0, 1200),
+    }));
+    throw error;
+  }
   if (await p.locator("#chooseCreator").isVisible()) {
     await p.screenshot({ path: join(tmpdir(), "thornwake-menu.png") });
     await p.locator("#chooseCreator").click();
