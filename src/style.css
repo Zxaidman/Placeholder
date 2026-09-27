@@ -926,6 +926,30 @@ dialog:has(#chooseCampaign) h2 {
 }
 
 /* Touch state remains visible with custom button textures and sizes. */
+.tutorial-focus {
+  animation: tutorialPulse 0.9s ease-in-out infinite;
+  border-color: #f5e3a8 !important;
+  filter: brightness(1.45);
+  box-shadow:
+    0 0 0 5px #f5e3a833,
+    0 0 28px #f5e3a855,
+    inset 0 0 0 4px #f5e3a822;
+  z-index: 4;
+}
+@keyframes tutorialPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-focus {
+    animation: none;
+  }
+}
+
 .control.pressed {
   border-color: #fff0ba;
   box-shadow:
