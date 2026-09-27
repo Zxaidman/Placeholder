@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 · Wayfinder Regions
+- Added a playable movement tutorial with device-aware prompts above the traveller for keyboard, touch/Android, and standard gamepads.
+- Added direct standard-gamepad movement/jump/dash/attack/hook input.
+- Reworked the traveller into a smoother expressive procedural character with segmented limbs, oversized mask, readable lean, squash/stretch, stride and dash trails.
+- Added five visual regions: Silent palace, Hanging garden, Ember halls, Mycelium wilds, and Drowned ruins.
+- Added separate Walkable platform and Under-platform creator cells and collision support.
+- Migrates project schema 1.0.0 / 1.1.0 exports to 1.2.0.
+
 ## 1.1.1
 
 - Added stationary Down-to-look ledge inspection and symmetric camera framing under reversed gravity.
