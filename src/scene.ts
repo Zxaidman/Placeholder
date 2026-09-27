@@ -18,9 +18,11 @@ export type SceneHooks = {
   hud: (world: World) => void;
 };
 const palettes = {
-  palace: [0x101f2b, 0xb3c7ad, 0x435d65],
-  garden: [0x112928, 0xc6d7a0, 0x426b60],
-  furnace: [0x282033, 0xe4ba97, 0x785868],
+  palace: [0x101f2b, 0xb3c7ad, 0x435d65, 0x7aa390, 0xd8c795],
+  garden: [0x102b24, 0xcfe0a7, 0x4d765f, 0x76ad73, 0xe1c987],
+  furnace: [0x261b2b, 0xe4b58d, 0x78515a, 0xe97755, 0xf3d88b],
+  mycelium: [0x1f1730, 0xd6b3cf, 0x60496f, 0xc98bd3, 0xf0d7a1],
+  drowned: [0x10232e, 0x9bcbd0, 0x3e6570, 0x5fc1bf, 0xe1c989],
 };
 export class TrialScene extends Phaser.Scene {
   room!: Room;
@@ -44,6 +46,16 @@ export class TrialScene extends Phaser.Scene {
   cameraOrigin = { x: 0, y: 0 };
   playZoom = 1.2;
   framing = new PlatformCamera();
+  visualX = 0;
+  visualY = 0;
+  tutorialStage = 0;
+  tutorialWallJumped = false;
+  tutorialInputFamily: "keyboard" | "touch" | "gamepad" =
+    "ontouchstart" in window && navigator.maxTouchPoints > 0 ? "touch" : "keyboard";
+  tutorialBubble!: Phaser.GameObjects.Text;
+  private tutorialFocusStage = -2;
+  private tutorialFocusFamily = "";
+  private tutorialBubbleText = "";
   constructor(public hooks: SceneHooks) {
     super("trial");
   }
@@ -55,11 +67,32 @@ export class TrialScene extends Phaser.Scene {
   }
   create() {
     this.art = this.add.container();
-    this.dynamic = this.add.graphics();
+    this.dynamic = this.add.graphics().setDepth(4);
     this.playerSprite = this.add
       .sprite(0, 0, "tiles", 260)
       .setOrigin(0)
-      .setDisplaySize(26, 34);
+      .setDisplaySize(26, 34)
+      .setVisible(false);
+    this.tutorialBubble = this.add
+      .text(0, 0, "")
+      .setOrigin(0.5, 1)
+      .setDepth(30)
+      .setStyle({
+        fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+        fontSize: "13px",
+        color: "#f4e8c6",
+        backgroundColor: "#0a151dcc",
+        padding: { left: 12, right: 12, top: 8, bottom: 8 },
+        align: "center",
+        stroke: "#050b0f",
+        strokeThickness: 3,
+      })
+      .setVisible(false);
+    window.addEventListener("keydown", () => (this.tutorialInputFamily = "keyboard"));
+    document.getElementById("touch")?.addEventListener("pointerdown", () => {
+      this.tutorialInputFamily = "touch";
+    });
+    window.addEventListener("gamepadconnected", () => (this.tutorialInputFamily = "gamepad"));
     this.input.mouse?.disableContextMenu();
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       if (this.playing) return;
@@ -137,8 +170,126 @@ export class TrialScene extends Phaser.Scene {
     this.accumulator = 0;
     this.log = [];
     this.recording = true;
+    this.visualX = room.spawn.x * TILE + 16;
+    this.visualY = room.spawn.y * TILE + 14;
+    this.tutorialStage = room.id === "tutorial" ? 0 : -1;
+    this.tutorialWallJumped = false;
+    this.tutorialBubble.setVisible(false);
     this.rebuild();
   }
+  resetTutorial() {
+    if (this.room?.id !== "tutorial") return;
+    this.tutorialStage = 0;
+    this.tutorialWallJumped = false;
+    this.tutorialFocusStage = -2;
+    this.tutorialFocusFamily = "";
+    this.tutorialBubbleText = "";
+    this.tutorialBubble.setVisible(false);
+  }
+  tutorialText(stage: number) {
+    const prompts = {
+      keyboard: [
+        "A / D\nMOVE",
+        "SPACE\nJUMP",
+        "SHIFT / K\nDASH",
+        "SPACE AT WALL\nWALL JUMP",
+        "SPACE AGAIN\nDOUBLE JUMP",
+        "DOWN + J / X\nPOGO",
+        "E\nCLAWLINE",
+        "HOLD E\nSWING",
+        "FOLLOW THE LIGHT\nREACH THE EXIT",
+      ],
+      touch: [
+        "JOYSTICK\nMOVE",
+        "JUMP\nTAP",
+        "DASH\nTAP",
+        "JUMP AT WALL\nWALL JUMP",
+        "JUMP AGAIN\nDOUBLE JUMP",
+        "DOWN + ATTACK\nPOGO",
+        "HOOK\nCLAWLINE",
+        "HOLD HOOK\nSWING",
+        "FOLLOW THE LIGHT\nREACH THE EXIT",
+      ],
+      gamepad: [
+        "LEFT STICK\nMOVE",
+        "A / ✕\nJUMP",
+        "B / ○\nDASH",
+        "A / ✕ AT WALL\nWALL JUMP",
+        "A / ✕ AGAIN\nDOUBLE JUMP",
+        "DOWN + X / □\nPOGO",
+        "LB / L1\nCLAWLINE",
+        "HOLD LB / L1\nSWING",
+        "FOLLOW THE LIGHT\nREACH THE EXIT",
+      ],
+    } as const;
+    return prompts[this.tutorialInputFamily][Math.min(stage, 8)];
+  }
+  tutorialFocus(stage: number) {
+    if (
+      stage === this.tutorialFocusStage &&
+      this.tutorialInputFamily === this.tutorialFocusFamily
+    )
+      return;
+    this.tutorialFocusStage = stage;
+    this.tutorialFocusFamily = this.tutorialInputFamily;
+    for (const el of document.querySelectorAll<HTMLElement>(".tutorial-focus"))
+      el.classList.remove("tutorial-focus");
+    if (!this.playing || stage < 1 || this.tutorialInputFamily !== "touch") return;
+    const action =
+      stage === 1 ? "move" :
+      stage === 2 || stage === 4 || stage === 5 ? "jump" :
+      stage === 3 ? "dash" :
+      stage === 6 ? "attack" :
+      stage === 7 || stage === 8 ? "hook" :
+      null;
+    if (!action) return;
+    if (action === "move") {
+      document.getElementById("stick")?.classList.add("tutorial-focus");
+      document.getElementById("left")?.classList.add("tutorial-focus");
+      document.getElementById("right")?.classList.add("tutorial-focus");
+    } else {
+      document.getElementById(action)?.classList.add("tutorial-focus");
+    }
+  }
+
+  updateTutorial() {
+    if (!this.playing || this.room.id !== "tutorial") {
+      if (this.tutorialBubble.visible) this.tutorialBubble.setVisible(false);
+      this.tutorialFocus(-1);
+      return;
+    }
+    const p = this.world.player;
+    const current = this.tutorialStage;
+    if (current === 0 && (Math.abs(p.vx) > 45 || p.x > this.room.spawn.x * TILE + 100))
+      this.tutorialStage = 1;
+    else if (current === 1 && this.world.lastEvent === "jump")
+      this.tutorialStage = 2;
+    else if (current === 2 && this.world.lastEvent === "dash")
+      this.tutorialStage = 3;
+    else if (current === 3 && this.tutorialWallJumped)
+      this.tutorialStage = 4;
+    else if (current === 4 && this.world.lastEvent === "jump" && !p.airJump)
+      this.tutorialStage = 5;
+    else if (current === 5 && this.world.lastEvent === "pogo")
+      this.tutorialStage = 6;
+    else if (current === 6 && p.grapple) {
+      const a = this.room.objects.find((o) => o.id === p.grapple);
+      if (a?.anchorMode === "pull") this.tutorialStage = 7;
+    } else if (current === 7 && p.grapple) {
+      const a = this.room.objects.find((o) => o.id === p.grapple);
+      if (a?.anchorMode === "swing") this.tutorialStage = 8;
+    }
+    this.tutorialFocus(this.tutorialStage);
+    const text = this.tutorialText(this.tutorialStage);
+    if (text !== this.tutorialBubbleText) {
+      this.tutorialBubbleText = text;
+      this.tutorialBubble.setText(text);
+    }
+    this.tutorialBubble
+      .setPosition(this.visualX, this.visualY - 34)
+      .setVisible(!this.paused);
+  }
+
   rebuild() {
     if (!this.art || !this.room) return;
     this.art.removeAll(true);
@@ -147,55 +298,71 @@ export class TrialScene extends Phaser.Scene {
     const colors = palettes[this.room.theme];
     g.fillStyle(colors[0]);
     g.fillRect(0, 0, COLS * TILE, ROWS * TILE);
-    // Distant palace silhouettes are drawn once per room, never collidable.
-    for (let layer = 0; layer < 2; layer++) {
-      const spacing = layer ? 244 : 180;
-      for (let x = -80; x < COLS * TILE; x += spacing) {
-        const top = 800 + (Math.abs(x * 13) % 7) * 19 + layer * 110;
-        g.fillStyle(layer ? 0x29444c : 0x203841, layer ? 0.38 : 0.42);
-        g.fillRect(x, top, 70, ROWS * TILE - top);
-        g.fillEllipse(x + 35, top, 70, 150);
-        g.fillStyle(colors[0], 0.7);
-        g.fillRect(x + 14, top + 40, 42, 350);
-        g.fillEllipse(x + 35, top + 40, 42, 105);
-        g.lineStyle(2, colors[1], 0.06);
-        g.lineBetween(x + 35, top + 10, x + 35, top + 380);
-      }
+    // Region-specific silhouettes and motifs. These are original vector assets,
+    // so creator rooms and authored rooms share the same visual language.
+    for (let band = 0; band < 5; band++) {
+      g.fillStyle(colors[1], 0.018 + band * 0.004);
+      g.fillRect(0, 100 + band * 210, COLS * TILE, 180);
     }
-    // Soft pools of ambient light and hanging vegetation.
-    for (let n = 0; n < 22; n++) {
-      const x = (n * 193 + 73) % (COLS * TILE),
-        y = 180 + ((n * 137) % (ROWS * TILE - 200));
-      for (let radius = 120; radius > 0; radius -= 10) {
-        g.fillStyle(0xb7dec7, 0.002);
-        g.fillCircle(x, y, radius);
+    if (this.room.theme === "palace") {
+      for (let x = 40; x < COLS * TILE; x += 320) {
+        g.lineStyle(10, colors[2], 0.26);
+        g.strokeRoundedRect(x, 900, 180, 700, { tl: 90, tr: 90, bl: 0, br: 0 });
+        g.lineStyle(2, colors[1], 0.18);
+        g.strokeRoundedRect(x + 12, 912, 156, 676, { tl: 78, tr: 78, bl: 0, br: 0 });
       }
-      g.lineStyle(2, 0x5b9380, 0.18);
-      g.lineBetween(x, 0, x + 12, y * 0.45);
-      for (let j = 0; j < 8; j++) {
-        g.fillStyle(0x5b9380, 0.16);
-        g.fillEllipse(x + 12 + (j % 2 ? 5 : -5), y * 0.45 - j * 19, 16, 7);
+    } else if (this.room.theme === "garden") {
+      for (let x = 30; x < COLS * TILE; x += 170) {
+        const top = 130 + ((x * 17) % 260);
+        g.lineStyle(4, colors[2], 0.24);
+        g.lineBetween(x, 0, x - 16, top);
+        for (let j = 0; j < 7; j++) {
+          const ly = top + j * 44;
+          g.fillStyle(colors[3], 0.17);
+          g.fillEllipse(x - 18 + (j % 2 ? 12 : -4), ly, 28, 13);
+          g.fillEllipse(x - 30 + (j % 2 ? -6 : 10), ly + 15, 21, 10);
+        }
       }
-    }
-    for (let x = 40; x < COLS * TILE; x += 320) {
-      g.lineStyle(9, colors[2], 0.18);
-      g.strokeRoundedRect(x, 960, 180, 650, { tl: 90, tr: 90, bl: 0, br: 0 });
-      g.lineStyle(2, colors[1], 0.06);
-      g.strokeRoundedRect(x + 11, 972, 158, 625, {
-        tl: 79,
-        tr: 79,
-        bl: 0,
-        br: 0,
-      });
-      const ly = 1040 + (x % 3) * 24;
-      g.lineStyle(1, 0x87978c, 0.35);
-      g.lineBetween(x + 200, 850, x + 200, ly);
-      for (let radius = 65; radius > 5; radius -= 8) {
-        g.fillStyle(0xe8c38a, 0.008);
-        g.fillCircle(x + 200, ly, radius);
+    } else if (this.room.theme === "furnace") {
+      for (let x = 20; x < COLS * TILE; x += 260) {
+        g.lineStyle(14, colors[2], 0.3);
+        g.strokeRoundedRect(x, 230, 110, 860, 44);
+        g.lineStyle(4, colors[3], 0.5);
+        g.lineBetween(x + 55, 280, x + 55, 1010);
+        for (let j = 0; j < 5; j++) {
+          g.fillStyle(colors[4], 0.16);
+          g.fillCircle(x + 28 + (j % 2) * 52, 1080 + j * 35, 5 + (j % 3) * 2);
+        }
       }
-      g.fillStyle(0xc8b385, 0.45);
-      g.fillRoundedRect(x + 197, ly - 5, 6, 10, 2);
+    } else if (this.room.theme === "mycelium") {
+      for (let x = 55; x < COLS * TILE; x += 210) {
+        const base = 980 + ((x * 11) % 160);
+        g.lineStyle(5, colors[2], 0.25);
+        g.lineBetween(x, base, x, base - 210);
+        g.fillStyle(colors[3], 0.25);
+        g.fillEllipse(x, base - 224, 70, 34);
+        g.fillStyle(colors[4], 0.18);
+        g.fillEllipse(x - 22, base - 236, 21, 12);
+        g.fillEllipse(x + 18, base - 250, 18, 10);
+        for (let n = 0; n < 8; n++) {
+          const sx = x - 80 + n * 22;
+          g.fillStyle(colors[4], 0.13);
+          g.fillCircle(sx, 180 + ((n * 83 + x) % 460), 2.4);
+        }
+      }
+    } else {
+      for (let x = 60; x < COLS * TILE; x += 240) {
+        const base = 1180 + ((x * 7) % 120);
+        g.lineStyle(8, colors[2], 0.28);
+        g.lineBetween(x, base, x + 30, 520);
+        g.lineBetween(x + 70, base, x + 110, 650);
+        g.fillStyle(colors[3], 0.18);
+        g.fillEllipse(x + 38, 520, 130, 40);
+        for (let n = 0; n < 5; n++) {
+          g.fillStyle(colors[4], 0.13);
+          g.fillCircle(x + 18 + n * 31, 160 + ((n * 117 + x) % 500), 3);
+        }
+      }
     }
     if (!this.playing) {
       g.lineStyle(1, colors[2], 0.25);
@@ -204,38 +371,49 @@ export class TrialScene extends Phaser.Scene {
       for (let y = 0; y <= ROWS; y++)
         g.lineBetween(0, y * TILE, COLS * TILE, y * TILE);
     }
-    for (const o of this.room.objects.filter((o) => o.kind === "solid")) {
+    for (const o of this.room.objects.filter((o) =>
+      o.kind === "solid" || o.kind === "platform" || o.kind === "underPlatform"
+    )) {
       const r = rect(o, 0);
-      g.fillStyle(0x0b171f);
+      const under = o.kind === "underPlatform";
+      g.fillStyle(under ? 0x0a1319 : 0x0b171f);
       g.fillRect(r.x, r.y, r.w, r.h);
-      g.fillStyle(colors[2]);
-      g.fillRect(r.x, r.y + 5, r.w, Math.max(1, r.h - 5));
-      g.fillStyle(0x101c25, 0.4);
-      g.fillRect(
-        r.x + 4,
-        r.y + 17,
-        Math.max(1, r.w - 8),
-        Math.max(1, r.h - 17),
-      );
-      g.lineStyle(1, colors[1], 0.13);
-      for (let y = r.y + 32; y < r.y + r.h; y += 32) {
-        g.lineBetween(r.x, y, r.x + r.w, y);
-        for (
-          let x = r.x + (((y - r.y) / 32) % 2 ? 24 : 48);
-          x < r.x + r.w;
-          x += 64
-        )
-          g.lineBetween(x, y, x, Math.min(y + 32, r.y + r.h));
+      g.fillStyle(under ? colors[2] : colors[2], under ? 0.82 : 1);
+      g.fillRect(r.x, r.y + (under ? 3 : 5), r.w, Math.max(1, r.h - (under ? 3 : 5)));
+      if (under) {
+        g.fillStyle(colors[0], 0.32);
+        for (let x = r.x + 8; x < r.x + r.w; x += 18)
+          g.lineBetween(x, r.y + 6, x + 10, r.y + r.h - 4);
+        g.lineStyle(2, colors[3], 0.22);
+        g.strokeRect(r.x + 2, r.y + 2, Math.max(1, r.w - 4), Math.max(1, r.h - 4));
+        continue;
       }
+      g.fillStyle(0x101c25, 0.32);
+      g.fillRect(r.x + 4, r.y + 12, Math.max(1, r.w - 8), Math.max(1, r.h - 12));
       g.fillStyle(colors[1]);
-      g.fillRect(r.x, r.y, r.w, 4);
-      g.fillStyle(0x799d79);
-      g.fillRect(r.x, r.y + 4, r.w, 3);
-      for (let x = r.x + 7; x < r.x + r.w - 3; x += 19) {
-        g.fillStyle(0x799d79, 0.7);
-        g.fillTriangle(x, r.y + 5, x + 8, r.y + 5, x + 2, r.y + 13 + (x % 7));
-        g.lineStyle(1, colors[1], 0.6);
-        g.lineBetween(x, r.y, x - 3, r.y - 4);
+      g.fillRect(r.x, r.y, r.w, 5);
+      g.fillStyle(colors[3], 0.95);
+      g.fillRect(r.x, r.y + 5, r.w, 3);
+      for (let x = r.x + 8; x < r.x + r.w - 4; x += 22) {
+        g.fillStyle(colors[4], 0.45);
+        if (this.room.theme === "garden")
+          g.fillEllipse(x, r.y + 9, 13, 5);
+        else if (this.room.theme === "furnace")
+          g.fillRect(x, r.y + 8, 12, 3);
+        else if (this.room.theme === "mycelium")
+          g.fillEllipse(x, r.y + 8, 8, 8);
+        else if (this.room.theme === "drowned")
+          g.lineBetween(x, r.y + 4, x - 3, r.y - 2);
+        else
+          g.fillRect(x, r.y + 8, 9, 2);
+      }
+      if (this.room.theme === "palace" || this.room.theme === "drowned") {
+        g.lineStyle(1, colors[1], 0.17);
+        for (let y = r.y + 32; y < r.y + r.h; y += 32) {
+          g.lineBetween(r.x, y, r.x + r.w, y);
+          for (let x = r.x + (((y - r.y) / 32) % 2 ? 24 : 48); x < r.x + r.w; x += 64)
+            g.lineBetween(x, y, x, Math.min(y + 32, r.y + r.h));
+        }
       }
     }
   }
@@ -247,11 +425,14 @@ export class TrialScene extends Phaser.Scene {
       while (this.accumulator >= STEP) {
         this.accumulator -= STEP;
         const input = this.hooks.input();
+        const wallBeforeTick = this.world.player.wall;
         if (this.recording) {
           if (this.world.frames < 144000) recordInput(this.log, input);
           else this.recording = false;
         }
         const event = this.world.tick(input);
+        if (this.room.id === "tutorial" && wallBeforeTick !== 0 && this.world.lastEvent === "jump")
+          this.tutorialWallJumped = true;
         if (this.world.lastEvent) this.hooks.sound(this.world.lastEvent);
         if (event) {
           if (event.type === "exit") this.paused = true;
@@ -261,6 +442,7 @@ export class TrialScene extends Phaser.Scene {
       }
       this.hooks.hud(this.world);
     }
+    if (this.playing && this.room.id === "tutorial") this.updateTutorial();
     const camera = this.cameras.main;
     if (this.playing) {
       const zoom = (this.scale.height / 660) * this.playZoom;
@@ -287,7 +469,9 @@ export class TrialScene extends Phaser.Scene {
     const g = this.dynamic;
     g.clear();
     const w = this.world;
-    for (const o of this.room.objects.filter((o) => o.kind !== "solid")) {
+    const colors = palettes[this.room.theme];
+    const colors = palettes[this.room.theme];
+    for (const o of this.room.objects.filter((o) => !["solid", "platform", "underPlatform"].includes(o.kind))) {
       const r = rect(o, this.playing ? w.time : 0),
         x = r.x,
         y = r.y;
@@ -316,7 +500,11 @@ export class TrialScene extends Phaser.Scene {
           break;
         }
         case "spike": {
-          g.fillStyle(0xd98282);
+          const spikeColor =
+            this.room.theme === "furnace" ? colors[3] :
+            this.room.theme === "mycelium" ? colors[4] :
+            this.room.theme === "drowned" ? colors[3] : 0xd98282;
+          g.fillStyle(spikeColor);
           for (let i = 0; i < o.w; i++)
             g.fillTriangle(
               x + i * 32,
@@ -454,53 +642,91 @@ export class TrialScene extends Phaser.Scene {
         );
       }
     }
-    const px = p.x + 10,
-      py = p.y + 14,
-      flip = p.gravity;
-    const stride =
-      this.playing && p.grounded
-        ? Math.sin(w.time * 19) * Math.min(3, Math.abs(p.vx) / 90)
-        : 1;
-    // Original botanical traveller: cream mask, coral cloak, flexible legs.
-    g.fillStyle(0xa4e9d2, 0.07);
-    g.fillCircle(px, py, 25);
-    g.lineStyle(3, 0x101b26);
-    g.lineBetween(px - 4, py + 5 * flip, px - 5 - stride, py + 14 * flip);
-    g.lineBetween(px + 4, py + 5 * flip, px + 5 + stride, py + 14 * flip);
-    g.fillStyle(p.dashTime > 0 ? 0xa3e9d5 : 0xb96567);
-    g.fillTriangle(
-      px,
-      py - 6 * flip,
-      px - 12 - p.vx * 0.006,
-      py + 9 * flip,
-      px + 11 - p.vx * 0.006,
-      py + 9 * flip,
-    );
+    const targetX = p.x + 10,
+      targetY = p.y + 14,
+      smoothing = Math.min(1, delta / 1000 * 18);
+    this.visualX += (targetX - this.visualX) * smoothing;
+    this.visualY += (targetY - this.visualY) * smoothing;
+
+    const px = this.visualX,
+      py = this.visualY,
+      flip = p.gravity,
+      speed = Math.min(1, Math.abs(p.vx) / 280),
+      phase = this.playing ? w.time * (9 + speed * 10) : 0,
+      moving = speed > 0.08 && p.grounded,
+      stride = moving ? Math.sin(phase) * 5 : 0,
+      bob = moving ? Math.abs(Math.sin(phase)) * 1.5 : 0,
+      airborne = !p.grounded,
+      lean = p.dashTime > 0 ? p.face * 0.14 : p.charging ? -p.face * 0.08 : p.vx * 0.00018,
+      squash = p.dashTime > 0 ? 0.86 : p.charging ? 1.06 : airborne ? 0.96 : 1 + Math.abs(stride) * 0.006;
+
+    // Smoothed, expressive traveller: large mask, slim torso, segmented limbs,
+    // rounded hand/foot ends, readable lean, and state-driven squash/stretch.
+    g.fillStyle(0xa4e9d2, 0.09);
+    g.fillEllipse(px, py + 18 * flip, 36, 9);
+    g.save();
+    g.translateCanvas(px, py - bob * flip);
+    g.rotateCanvas(lean);
+    g.scaleCanvas(squash, 1 / squash);
+
+    // trailing cloak / shoulder silhouette
+    g.fillStyle(p.dashTime > 0 ? 0xa8f0dc : 0xb76669);
+    g.fillTriangle(-1, 2 * flip, -15 - p.vx * 0.025, 25 * flip, 13 - p.vx * 0.01, 22 * flip);
+    g.fillStyle(0x8e4f58, 0.8);
+    g.fillTriangle(-2, 7 * flip, -12 - p.vx * 0.02, 28 * flip, 8 - p.vx * 0.01, 26 * flip);
+
+    const legY = 17 * flip;
+    const kneeY = 25 * flip;
+    const footY = 32 * flip;
+    const leftKnee = 4 - stride * 0.7;
+    const rightKnee = 5 + stride * 0.7;
+    g.lineStyle(5, 0x1a2830, 1);
+    g.lineBetween(-4, legY, leftKnee, kneeY);
+    g.lineBetween(leftKnee, kneeY, leftKnee - stride * 0.7, footY);
+    g.lineBetween(5, legY, rightKnee, kneeY);
+    g.lineBetween(rightKnee, kneeY, rightKnee + stride * 0.7, footY);
+    g.fillStyle(0x1a2830);
+    g.fillCircle(leftKnee - stride * 0.7, footY, 3);
+    g.fillCircle(rightKnee + stride * 0.7, footY, 3);
+
+    // slim torso
+    g.fillStyle(p.dashTime > 0 ? 0xa4ebd7 : 0x9f5e65);
+    g.fillRoundedRect(-7, 1 * flip, 14, 21, 6);
+    g.fillStyle(0xd9b08d, 0.7);
+    g.fillEllipse(0, 4 * flip, 8, 14);
+
+    // two-segment arms with circular hands
+    const armLift = p.attackTime > 0 ? -4 * flip : moving ? Math.sin(phase + Math.PI) * 3 : 0;
+    const lead = p.face * (p.dashTime > 0 ? 6 : moving ? 2 : 0);
+    g.lineStyle(4.5, 0x1b2a31, 1);
+    g.lineBetween(-7, 5 * flip, -11 - lead * 0.3, (10 + armLift) * flip);
+    g.lineBetween(-11 - lead * 0.3, (10 + armLift) * flip, -14 - lead, (16 + armLift) * flip);
+    g.lineBetween(7, 5 * flip, 10 + lead * 0.3, (10 - armLift) * flip);
+    g.lineBetween(10 + lead * 0.3, (10 - armLift) * flip, 14 + lead, (16 - armLift) * flip);
+    g.fillStyle(0xd5b190);
+    g.fillCircle(-14 - lead, (16 + armLift) * flip, 3.2);
+    g.fillCircle(14 + lead, (16 - armLift) * flip, 3.2);
+
+    // oversized head / mask, with eye direction and simple horn personality
     g.fillStyle(0xefdfb8);
-    g.fillEllipse(px, py - 8 * flip, 18, 17);
+    g.fillEllipse(0, -11 * flip, 26, 24);
     g.fillStyle(0x213b43);
-    g.fillEllipse(px - 3 + p.face * 2, py - 8 * flip, 2.5, 5);
-    g.fillEllipse(px + 3 + p.face * 2, py - 8 * flip, 2.5, 5);
-    g.fillStyle(0x8cbea2);
-    g.fillTriangle(
-      px - 1,
-      py - 15 * flip,
-      px - 11,
-      py - 24 * flip,
-      px - 6,
-      py - 13 * flip,
-    );
-    g.fillTriangle(
-      px + 1,
-      py - 15 * flip,
-      px + 9,
-      py - 22 * flip,
-      px + 6,
-      py - 13 * flip,
-    );
+    const eyeShift = p.face * 3;
+    g.fillEllipse(-4 + eyeShift, -11 * flip, 3.2, 6.5);
+    g.fillEllipse(4 + eyeShift, -11 * flip, 3.2, 6.5);
+    g.fillStyle(colors[3], 0.95);
+    g.fillTriangle(-2, -20 * flip, -15, -33 * flip, -7, -18 * flip);
+    g.fillTriangle(3, -20 * flip, 13, -31 * flip, 8, -17 * flip);
+    g.restore();
+
+    if (p.dashTime > 0 && this.playing) {
+      g.lineStyle(6, colors[3], 0.22);
+      for (let n = 1; n <= 3; n++)
+        g.lineBetween(px - p.face * (12 + n * 12), py + 2, px - p.face * (28 + n * 16), py + 2);
+    }
     // A restrained field of motes makes depth legible without obscuring hazards.
     if (this.playing)
-      for (let n = 0; n < 24; n++) {
+      for (let n = 0; n < 10; n++) {
         const x = (n * 139 + Math.sin(w.time * 0.3 + n) * 13) % (COLS * TILE);
         const y =
           220 +
