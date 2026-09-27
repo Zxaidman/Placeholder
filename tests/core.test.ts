@@ -88,6 +88,13 @@ describe("movement and interaction", () => {
     for (let n = 0; n < 40; n++) w.tick(emptyInput());
     expect(w.player.x + 20).toBeLessThanOrEqual(7 * 32);
   });
+  it("exposes a standalone attack action", () => {
+    const w = new World(blankRoom());
+    for (let n = 0; n < 120; n++) w.tick(emptyInput());
+    w.tick({ ...emptyInput(), attack: true });
+    expect(w.lastEvent).toBe("attack");
+    expect(w.player.attackTime).toBeGreaterThan(0);
+  });
   it("pogo bounces and refills", () => {
     const r = blankRoom();
     r.objects.push(tile("pogo", 4, 10));
