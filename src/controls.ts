@@ -178,6 +178,13 @@ export class Controls {
       el.style.backgroundImage = p.texture ? `url("${p.texture}")` : "";
     }
   }
+  focus(action: "move" | "jump" | "dash" | "attack" | "hook" | "down" | null) {
+    for (const el of this.element.querySelectorAll<HTMLElement>(".tutorial-focus"))
+      el.classList.remove("tutorial-focus");
+    if (!this.enabled || !action) return;
+    const id = action === "move" ? (this.preset.mode === "joystick" ? "stick" : "right") : action;
+    this.element.querySelector<HTMLElement>("#" + id)?.classList.add("tutorial-focus");
+  }
   availability(
     abilities: {
       dash: boolean;
