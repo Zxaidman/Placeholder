@@ -168,7 +168,10 @@ export class World {
     p.coyote = p.grounded ? 0.1 : Math.max(0, p.coyote - dt);
     p.buffer = jump ? 0.12 : Math.max(0, p.buffer - dt);
     p.attackTime = Math.max(0, p.attackTime - dt);
-    if (attack && i.down && abilities.pogo) p.attackTime = 0.18;
+    if (attack) {
+      p.attackTime = i.down && abilities.pogo ? 0.18 : 0.12;
+      this.lastEvent = i.down && abilities.pogo ? "attack" : "attack";
+    }
     if (i.axis) p.face = Math.sign(i.axis);
     if (p.buffer > 0) {
       if (p.coyote > 0) {
