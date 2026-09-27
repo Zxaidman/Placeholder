@@ -1,11 +1,13 @@
 import { z } from "zod";
-export const VERSION = "1.1.1",
+export const VERSION = "1.2.0",
   PHYSICS_VERSION = "1.0.0";
 export const COLS = 80,
   ROWS = 44,
   TILE = 32;
 export const kinds = [
   "solid",
+  "platform",
+  "underPlatform",
   "spike",
   "pogo",
   "enemy",
@@ -79,7 +81,7 @@ export const roomSchema = z.object({
   deathRule: z.enum(["instant", "health"]),
   abilities: abilitiesSchema,
   objects: z.array(objectSchema).max(2500),
-  theme: z.enum(["palace", "garden", "furnace"]).default("palace"),
+  theme: z.enum(["palace", "garden", "furnace", "mycelium", "drowned"]).default("palace"),
 });
 export type Room = z.infer<typeof roomSchema>;
 const clearSchema = z.object({
@@ -98,7 +100,7 @@ const clearSchema = z.object({
 export type Clear = z.infer<typeof clearSchema>;
 export const projectDraftSchema = z.object({
   format: z.literal("thornwake"),
-  schemaVersion: z.literal("1.1.0"),
+  schemaVersion: z.literal("1.2.0"),
   name: z.string().trim().min(1).max(80),
   rooms: z.array(roomSchema).min(1).max(100),
   clears: z.array(clearSchema).max(100).default([]),
@@ -146,7 +148,7 @@ export const projectSchema = projectDraftSchema.superRefine((p, ctx) => {
     if (
       r.objects.some(
         (o) =>
-          ["solid", "door"].includes(o.kind) &&
+          ["solid", "platform", "underPlatform", "door"].includes(o.kind) &&
           r.spawn.x >= o.x &&
           r.spawn.x < o.x + o.w &&
           r.spawn.y >= o.y &&
@@ -159,8 +161,8 @@ export const projectSchema = projectDraftSchema.superRefine((p, ctx) => {
 export function migrate(raw: unknown): unknown {
   if (!raw || typeof raw !== "object") return raw;
   const p = structuredClone(raw) as Record<string, unknown>;
-  if (p.schemaVersion === "1.0.0" && Array.isArray(p.rooms)) {
-    p.schemaVersion = "1.1.0";
+  if ((p.schemaVersion === "1.0.0" || p.schemaVersion === "1.1.0") && Array.isArray(p.rooms)) {
+    p.schemaVersion = "1.2.0";
     p.clears = [];
     p.rooms = p.rooms.map((r: any) => ({
       ...r,
@@ -202,7 +204,7 @@ export function blankRoom(name = "Untitled trial"): Room {
 export function blankProject(): Project {
   return {
     format: "thornwake",
-    schemaVersion: "1.1.0",
+    schemaVersion: "1.2.0",
     name: "My palace",
     rooms: [blankRoom()],
     clears: [],
