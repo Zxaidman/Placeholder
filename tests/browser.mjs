@@ -72,7 +72,7 @@ try {
   const exported = JSON.parse(
     await readFile(join(tmpdir(), "thornwake-v1-export.json"), "utf8"),
   );
-  assert.equal(exported.schemaVersion, "1.1.0");
+  assert.equal(exported.schemaVersion, "1.2.0");
   assert.ok(
     exported.rooms[0].objects.some(
       (o) => o.kind === "moving" && o.speed === 90,
@@ -107,6 +107,13 @@ try {
   await p.getByRole("button", { name: "Resume", exact: true }).click();
   await p.locator("#returnEditor").click();
   await p.screenshot({ path: join(tmpdir(), "thornwake-desktop.png") });
+  await p.locator("#home").click();
+  await p.locator("#chooseTutorial").click();
+  await p.waitForFunction(
+    () => document.getElementById("mode")?.textContent.includes("TUTORIAL"),
+  );
+  assert.ok((await p.locator("#mode").innerText()).includes("Wayfinder"));
+  await p.locator("#home").click();
   await p.locator("#campaign").click();
   assert.equal(await p.locator("#chapters button").count(), 12);
   assert.equal(await p.locator("#chapters button").nth(1).isDisabled(), true);
