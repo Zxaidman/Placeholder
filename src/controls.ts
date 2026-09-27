@@ -206,6 +206,21 @@ export class Controls {
     }
     this.element.querySelector("#dash")!.classList.toggle("spent", !dashReady);
   }
+  private readGamepad(i: Input) {
+    const pads = navigator.getGamepads?.() || [];
+    const pad = Array.from(pads).find((value) => value?.connected);
+    if (!pad) return;
+    const deadzone = 0.22;
+    const axisX = Math.abs(pad.axes[0] ?? 0) > deadzone ? Math.sign(pad.axes[0]) : 0;
+    const axisY = Math.abs(pad.axes[1] ?? 0) > deadzone ? pad.axes[1] : 0;
+    i.axis = axisX || i.axis;
+    i.down ||= axisY > 0.45;
+    i.jump ||= !!pad.buttons[0]?.pressed;
+    i.dash ||= !!pad.buttons[1]?.pressed;
+    i.attack ||= !!pad.buttons[2]?.pressed;
+    i.hook ||= !!pad.buttons[4]?.pressed;
+  }
+
   read(): Input {
     const k = this.keys,
       i: Input = {
@@ -226,6 +241,7 @@ export class Controls {
       i.attack ||= t.attack;
       i.hook ||= t.hook;
     }
+    this.readGamepad(i);
     return i;
   }
   release() {
