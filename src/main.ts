@@ -1166,6 +1166,8 @@ $("projects").onclick = () => {
     activeProjectId = next[0]?.id || crypto.randomUUID();
     roomIndex = 0;
     progress = pr;
+    touchControlsExplicit =
+      typeof b.preferences?.touchControls === "boolean";
     prefs = validatePreferences(b.preferences);
     $<HTMLSelectElement>("ratio").value = prefs.ratio;
     scene.playZoom = prefs.zoom;
