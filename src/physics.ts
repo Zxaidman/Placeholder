@@ -116,7 +116,7 @@ export class World {
   constructor(public room: Room) {
     this.player = spawn(room);
     this.solids = room.objects.filter((o) =>
-      ["solid", "moving", "timed", "door"].includes(o.kind),
+      ["solid", "platform", "underPlatform", "moving", "timed", "door"].includes(o.kind),
     );
     this.interactions = room.objects.filter(
       (o) => !["solid", "moving", "timed", "door"].includes(o.kind),
