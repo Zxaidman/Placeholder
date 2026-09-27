@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1 · Controls & Contact Fixes
+- Made Attack an explicit tutorial action before Pogo, with clear keyboard, touch and gamepad labels.
+- Added explicit keyboard/gamepad/touch instructions for Clawline and Swing.
+- Added an on-screen touch-control toggle; mobile/touch-first devices enable it by default, while desktop and connected-gamepad devices keep it off by default.
+- Aligned the procedural traveller's rounded feet to the 28px physics collider so the legs no longer sink into walkable platforms.
+
 ## 1.2.0 · Wayfinder Regions
 - Added a playable movement tutorial with device-aware prompts above the traveller for keyboard, touch/Android, and standard gamepads.
 - Added direct standard-gamepad movement/jump/dash/attack/hook input.
