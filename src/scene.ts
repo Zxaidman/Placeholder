@@ -456,6 +456,7 @@ export class TrialScene extends Phaser.Scene {
     const g = this.dynamic;
     g.clear();
     const w = this.world;
+    const colors = palettes[this.room.theme];
     for (const o of this.room.objects.filter((o) => !["solid", "platform", "underPlatform"].includes(o.kind))) {
       const r = rect(o, this.playing ? w.time : 0),
         x = r.x,
